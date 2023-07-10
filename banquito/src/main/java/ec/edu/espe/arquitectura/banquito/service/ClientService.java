@@ -55,22 +55,14 @@ public class ClientService {
             Iterator<ClientPhone> phonesIterator = phones.iterator();
             while(phonesIterator.hasNext()){
                 phonesIterator.next().setState("ACT");
-            }
+            } 
             List<GroupCompanyMember> groups = client.getGroupCompanyMember();
-            if(!groups.isEmpty()){
-                //Iterator<GroupCompanyMember> groupsIterator = groups.iterator();
+            if(groups != null ){
                 for(GroupCompanyMember groupsIterator : groups){
                     groupsIterator.setCreationDate(new Date());
                     groupsIterator.setLastModifiedDate(new Date());
                     groupsIterator.setState("ACT");
                 }
-                /* 
-                while(groupsIterator.hasNext()){
-                    groupsIterator.next().setCreationDate(new Date());
-                    groupsIterator.next().setLastModifiedDate(new Date());
-                    groupsIterator.next().setState("ACT");
-                }
-                */
             }
 
             return this.clientRepository.save(client);
