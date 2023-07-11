@@ -23,6 +23,7 @@ public class GroupCompany {
     private Integer locationId;
     @Indexed(unique = true)
     private String uniqueKey;
+    @Indexed(unique = true)
     private String groupName;
     private String emailAddress;
     private String phoneNumber;

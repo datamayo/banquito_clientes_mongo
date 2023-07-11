@@ -14,13 +14,18 @@ import ec.edu.espe.arquitectura.banquito.model.ClientAddress;
 import ec.edu.espe.arquitectura.banquito.model.ClientPhone;
 import ec.edu.espe.arquitectura.banquito.model.GroupCompanyMember;
 import ec.edu.espe.arquitectura.banquito.repository.ClientRepository;
+import ec.edu.espe.arquitectura.banquito.repository.GroupCompanyRepository;
 
 @Service
 public class ClientService {
     private final ClientRepository clientRepository;
+    private final GroupCompanyRepository groupCompanyRepository;
 
-    public ClientService(ClientRepository clientRepository) {
+    
+
+    public ClientService(ClientRepository clientRepository, GroupCompanyRepository groupCompanyRepository) {
         this.clientRepository = clientRepository;
+        this.groupCompanyRepository = groupCompanyRepository;
     }
 
     // Gestión de Clientes Persona
