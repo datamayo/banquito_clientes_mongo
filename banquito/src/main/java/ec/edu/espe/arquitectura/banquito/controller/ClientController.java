@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ec.edu.espe.arquitectura.banquito.dto.ClientRQ;
 import ec.edu.espe.arquitectura.banquito.model.Client;
 import ec.edu.espe.arquitectura.banquito.service.ClientService;
 
@@ -30,7 +31,7 @@ public class ClientController {
     }
 
     @PostMapping
-    public ResponseEntity<Client> clientCreate(@RequestBody Client client) {
+    public ResponseEntity<Client> clientCreate(@RequestBody ClientRQ client) {
         try {
             Client clientRS = this.clientService.clientCreate(client);
             return ResponseEntity.ok(clientRS);

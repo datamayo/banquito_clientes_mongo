@@ -9,15 +9,13 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Data;
 
-@Setter
-@Getter
-@NoArgsConstructor
+@Data
 @Document(collection = "clients")
 @CompoundIndex(name = "idx_clientes_typeDoc_DocId", def = "{'typeDocumentId':1, 'documentId':1 }", unique = true)
+@Builder
 public class Client {
     @Id
     private String id;
