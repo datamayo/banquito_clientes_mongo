@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ec.edu.espe.arquitectura.banquito.dto.ClientRQ;
+import ec.edu.espe.arquitectura.banquito.dto.ClientRS;
 import ec.edu.espe.arquitectura.banquito.model.Client;
 import ec.edu.espe.arquitectura.banquito.service.ClientService;
 
@@ -22,10 +23,10 @@ public class ClientController {
     }
 
     @GetMapping("/{documentType}/{documentId}")
-    public ResponseEntity<Client> obtainByDocumentTypeAndDocumentId(
+    public ResponseEntity<ClientRS> obtainByDocumentTypeAndDocumentId(
             @PathVariable(name = "documentType") String documentType,
             @PathVariable(name = "documentId") String documentId) {
-        Client client = this.clientService.listByDocumentTypeAndDocumentId(documentType, documentId);
+        ClientRS client = this.clientService.obtainClientByDocumentTypeAndDocumentId(documentType, documentId);
         return ResponseEntity.ok(client);
 
     }

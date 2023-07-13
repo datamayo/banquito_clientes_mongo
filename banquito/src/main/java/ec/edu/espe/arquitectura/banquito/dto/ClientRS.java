@@ -3,12 +3,6 @@ package ec.edu.espe.arquitectura.banquito.dto;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.data.annotation.Version;
-import org.springframework.data.mongodb.core.index.Indexed;
-
-import ec.edu.espe.arquitectura.banquito.model.ClientAddress;
-import ec.edu.espe.arquitectura.banquito.model.ClientPhone;
-import ec.edu.espe.arquitectura.banquito.model.GroupCompanyMember;
 import lombok.Builder;
 import lombok.Data;
 
@@ -31,8 +25,8 @@ public class ClientRS {
     private String state;
     private Date closedDate;
     private String comments;
-    private List<ClientPhone> phoneNumbers;
-    private List<ClientAddress> addresses;
-    private List<GroupCompanyMember> groupCompanyMember;
+    private List<ClientPhoneRS> phoneNumbers;
+    private List<ClientAddressRS> addresses;
+    //private List<GroupCompanyMember> groupCompanyMember;
     
 }
