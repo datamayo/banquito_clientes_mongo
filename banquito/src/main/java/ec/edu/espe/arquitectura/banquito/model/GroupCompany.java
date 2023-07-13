@@ -21,9 +21,9 @@ public class GroupCompany {
     private String id;
     private Integer branchId;
     private Integer locationId;
-    @Indexed(unique = true)
+    //@Indexed(unique = true)
     private String uniqueKey;
-    @Indexed(unique = true)
+    //@Indexed(unique = true)
     private String groupName;
     private String emailAddress;
     private String phoneNumber;
@@ -40,7 +40,7 @@ public class GroupCompany {
     @Version
     private Long version;
 
-    private List<GroupCompanyMember> groupCompanyMember;
+    //private List<GroupCompanyMember> groupCompanyMember;
 
 
 }

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ec.edu.espe.arquitectura.banquito.model.Client;
 import ec.edu.espe.arquitectura.banquito.model.ClientAddress;
 import ec.edu.espe.arquitectura.banquito.model.ClientPhone;
+import ec.edu.espe.arquitectura.banquito.model.GroupCompany;
 import ec.edu.espe.arquitectura.banquito.model.GroupCompanyMember;
 import ec.edu.espe.arquitectura.banquito.repository.ClientRepository;
 import ec.edu.espe.arquitectura.banquito.repository.GroupCompanyRepository;
@@ -63,10 +64,17 @@ public class ClientService {
             } 
             List<GroupCompanyMember> groups = client.getGroupCompanyMember();
             if(groups != null ){
-                for(GroupCompanyMember groupsIterator : groups){
-                    groupsIterator.setCreationDate(new Date());
-                    groupsIterator.setLastModifiedDate(new Date());
-                    groupsIterator.setState("ACT");
+                for (GroupCompanyMember item : groups) {
+                    GroupCompany groupCompanyDocument = this.groupCompanyRepository
+                            .findFirstByGroupName(item.getGroupCompany().getGroupName());
+                    if (groupCompanyDocument == null) {
+                        throw new RuntimeException("No existe esta compañia");
+                    } else {
+                        item.setGroupCompany(groupCompanyDocument);
+                        item.setCreationDate(new Date());
+                        item.setLastModifiedDate(new Date());
+                        item.setState("ACT");
+                    }
                 }
             }
 
