@@ -9,6 +9,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ec.edu.espe.arquitectura.banquito.dto.ClientAddressRS;
+import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRS;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRS;
@@ -38,18 +40,50 @@ public class ClientService {
 
     }
 
+    private List<ClientPhone> transformClientPhoneRQ(List<ClientPhoneRQ> rq) {
+        List<ClientPhone> clientPhones = new ArrayList<>();
+        for (ClientPhoneRQ clientPhoneRQ : rq) {
+            ClientPhone clientPhone = ClientPhone.builder().phoneNumber(clientPhoneRQ.getPhoneNumber())
+                    .phoneType(clientPhoneRQ.getPhoneType()).build();
+            clientPhones.add(clientPhone);
+        }
+        return clientPhones;
+
+    }
+
     private List<ClientPhoneRS> transformPhoneRS(List<ClientPhone> phoneNumbers) {
         List<ClientPhoneRS> clientPhoneRS = new ArrayList<>();
         for (ClientPhone clientPhone : phoneNumbers) {
-            ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber()).phoneType(clientPhone.getPhoneType())
+            ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber())
+                    .phoneType(clientPhone.getPhoneType())
                     .isDefault(clientPhone.getIsDefault()).state(clientPhone.getState()).build();
             clientPhoneRS.add(rs);
         }
+
         return clientPhoneRS;
+
     }
 
+    private List<ClientAddressRS> transformAddressRS(List<ClientAddress> addresses) {
+        List<ClientAddressRS> clientAddressRS = new ArrayList<>();
+
+        for (ClientAddress clientAddress : addresses) {
+            ClientAddressRS rs = ClientAddressRS.builder().locationId(clientAddress.getLocationId())
+                    .typeAddress(clientAddress.getTypeAddress()).line1(clientAddress.getLine1())
+                    .line2(clientAddress.getLine2()).latitude(clientAddress.getLatitude())
+                    .longitude(clientAddress.getLongitude()).isDefault(clientAddress.getIsDefault())
+                    .state(clientAddress.getState()).build();
+            clientAddressRS.add(rs);
+        }
+
+        return clientAddressRS;
+    }
+
+    // validar cuando no hay direccion o telefono
     private ClientRS transformClientRS(Client client) {
         List<ClientPhoneRS> phoneNumbersRS = this.transformPhoneRS(client.getPhoneNumbers());
+        List<ClientAddressRS> addressesRS = this.transformAddressRS(client.getAddresses());
+
         ClientRS rs = ClientRS.builder().branchId(client.getBranchId())
                 .uniqueKey(client.getUniqueKey()).typeDocumentId(client.getTypeDocumentId())
                 .documentId(client.getDocumentId()).firstName(client.getFirstName())
@@ -58,7 +92,7 @@ public class ClientService {
                 .creationDate(client.getCreationDate()).activationDate(client.getActivationDate())
                 .lastModifiedDate(client.getLastModifiedDate()).role(client.getRole())
                 .state(client.getState()).closedDate(client.getClosedDate()).comments(client.getComments())
-                .phoneNumbers(phoneNumbersRS).build();
+                .phoneNumbers(phoneNumbersRS).addresses(addressesRS).build();
         return rs;
     }
 
