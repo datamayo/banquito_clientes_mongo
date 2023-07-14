@@ -36,7 +36,7 @@ public class ClientService {
         Client client = Client.builder().branchId(rq.getBranchId()).typeDocumentId(rq.getTypeDocumentId())
                 .documentId(rq.getDocumentId()).firstName(rq.getFirstName()).lastName(rq.getLastName())
                 .gender(rq.getGender()).birthDate(rq.getBirthDate()).emailAddress(rq.getEmailAddress())
-                .role(rq.getRole()).comments(rq.getComments()).build();
+                .role(rq.getRole()).comments(rq.getComments()).state(rq.getState()).build();
         return client;
 
     }
@@ -53,29 +53,33 @@ public class ClientService {
 
     private List<ClientPhoneRS> transformPhoneRS(List<ClientPhone> phoneNumbers) {
         List<ClientPhoneRS> clientPhoneRS = new ArrayList<>();
-        for (ClientPhone clientPhone : phoneNumbers) {
-            ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber())
-                    .phoneType(clientPhone.getPhoneType())
-                    .isDefault(clientPhone.getIsDefault()).state(clientPhone.getState()).build();
-            clientPhoneRS.add(rs);
+        if (phoneNumbers == null) {
+            clientPhoneRS = null;
+        } else {
+            for (ClientPhone clientPhone : phoneNumbers) {
+                ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber())
+                        .phoneType(clientPhone.getPhoneType())
+                        .isDefault(clientPhone.getIsDefault()).state(clientPhone.getState()).build();
+                clientPhoneRS.add(rs);
+            }
         }
-
         return clientPhoneRS;
-
     }
 
     private List<ClientAddressRS> transformAddressRS(List<ClientAddress> addresses) {
         List<ClientAddressRS> clientAddressRS = new ArrayList<>();
-
-        for (ClientAddress clientAddress : addresses) {
-            ClientAddressRS rs = ClientAddressRS.builder().locationId(clientAddress.getLocationId())
-                    .typeAddress(clientAddress.getTypeAddress()).line1(clientAddress.getLine1())
-                    .line2(clientAddress.getLine2()).latitude(clientAddress.getLatitude())
-                    .longitude(clientAddress.getLongitude()).isDefault(clientAddress.getIsDefault())
-                    .state(clientAddress.getState()).build();
-            clientAddressRS.add(rs);
+        if (addresses == null) {
+            clientAddressRS = null;
+        } else {
+            for (ClientAddress clientAddress : addresses) {
+                ClientAddressRS rs = ClientAddressRS.builder().locationId(clientAddress.getLocationId())
+                        .typeAddress(clientAddress.getTypeAddress()).line1(clientAddress.getLine1())
+                        .line2(clientAddress.getLine2()).latitude(clientAddress.getLatitude())
+                        .longitude(clientAddress.getLongitude()).isDefault(clientAddress.getIsDefault())
+                        .state(clientAddress.getState()).build();
+                clientAddressRS.add(rs);
+            }
         }
-
         return clientAddressRS;
     }
 
@@ -218,7 +222,12 @@ public class ClientService {
             clientTmp.setRole(client.getRole());
             clientTmp.setComments(client.getComments());
             clientTmp.setLastModifiedDate(new Date());
-            //clientTmp.setState(client.getState());
+            clientTmp.setState(client.getState());
+            if ("ACT".equals(client.getState())) {
+                clientTmp.setActivationDate(new Date());
+                clientTmp.setClosedDate(null);
+            }
+
             return this.clientRepository.save(clientTmp);
         }
     }
@@ -234,6 +243,18 @@ public class ClientService {
             clientTmp.setClosedDate(new Date());
             clientTmp.setLastModifiedDate(new Date());
             clientTmp.setActivationDate(null);
+            return this.clientRepository.save(clientTmp);
+        }
+    }
+    @Transactional
+    public Client addPhones(String typeDocument, String documentId, List<ClientPhoneRQ> phonesRQ){
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        List<ClientPhone> phones = this.transformClientPhoneRQ(phonesRQ);
+        if (clientTmp == null) {
+            throw new RuntimeException("El cliente no existe");
+        } else {
+            clientTmp.setPhoneNumbers(phones);
             return this.clientRepository.save(clientTmp);
         }
     }

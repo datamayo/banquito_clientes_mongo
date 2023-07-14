@@ -45,7 +45,6 @@ public class ClientController {
 
         }
     }
-
     /*
      * @PutMapping("/phones/{typeDocument}/{documentId}")
      * public ResponseEntity<Client> clientAddPhones(@PathVariable(name =
@@ -53,18 +52,18 @@ public class ClientController {
      * 
      * @PathVariable(name = "documentId") String documentId,
      * 
-     * @RequestBody Client client) {
+     * @RequestBody ClientRQ client) {
      * try {
-     * //List<ClientPhoneRQ> clientPhoneRQ = this.clientService.
+     * // List<ClientPhoneRQ> clientPhoneRQ = this.clientService.
      * Client clientRS = this.clientService.createPhoneClient(typeDocument,
-     * documentId, clientPhoneRQ);
+     * documentId, client);
      * return ResponseEntity.ok(clientRS);
      * } catch (RuntimeException rte) {
      * return ResponseEntity.badRequest().build();
-     * 
      * }
      * }
      */
+
     @PutMapping("/updateClient/{typeDocument}/{documentId}")
     public ResponseEntity<Client> clientUpdate(@RequestBody ClientRQ client,
             @PathVariable(name = "typeDocument") String typeDocument,
@@ -87,6 +86,18 @@ public class ClientController {
         } catch (RuntimeException rte) {
             return ResponseEntity.badRequest().build();
 
+        }
+    }
+
+    @PutMapping("/phones/{typeDocument}/{documentId}")
+    public ResponseEntity<Client> addPhones(@RequestBody List<ClientPhoneRQ> phonesRQ,
+            @PathVariable(name = "typeDocument") String typeDocument,
+            @PathVariable(name = "documentId") String documentId) {
+        try {
+            Client clientRS = this.clientService.addPhones(typeDocument, documentId, phonesRQ);
+            return ResponseEntity.ok(clientRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }
