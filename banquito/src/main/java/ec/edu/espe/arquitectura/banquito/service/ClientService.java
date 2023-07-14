@@ -17,6 +17,7 @@ import ec.edu.espe.arquitectura.banquito.dto.ClientRS;
 import ec.edu.espe.arquitectura.banquito.model.Client;
 import ec.edu.espe.arquitectura.banquito.model.ClientAddress;
 import ec.edu.espe.arquitectura.banquito.model.ClientPhone;
+import ec.edu.espe.arquitectura.banquito.model.GroupCompany;
 import ec.edu.espe.arquitectura.banquito.model.GroupCompanyMember;
 import ec.edu.espe.arquitectura.banquito.repository.ClientRepository;
 import ec.edu.espe.arquitectura.banquito.repository.GroupCompanyRepository;
@@ -176,6 +177,7 @@ public class ClientService {
             client.setLastModifiedDate(new Date());
             client.setActivationDate(new Date());
             client.setState("ACT");
+
             return this.clientRepository.save(client);
         } else {
             throw new RuntimeException("Cliente con ID " + client.getId() + " ya existe");
