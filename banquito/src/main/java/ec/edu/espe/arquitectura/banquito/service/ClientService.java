@@ -83,7 +83,6 @@ public class ClientService {
     private ClientRS transformClientRS(Client client) {
         List<ClientPhoneRS> phoneNumbersRS = this.transformPhoneRS(client.getPhoneNumbers());
         List<ClientAddressRS> addressesRS = this.transformAddressRS(client.getAddresses());
-
         ClientRS rs = ClientRS.builder().branchId(client.getBranchId())
                 .uniqueKey(client.getUniqueKey()).typeDocumentId(client.getTypeDocumentId())
                 .documentId(client.getDocumentId()).firstName(client.getFirstName())
@@ -94,6 +93,7 @@ public class ClientService {
                 .state(client.getState()).closedDate(client.getClosedDate()).comments(client.getComments())
                 .phoneNumbers(phoneNumbersRS).addresses(addressesRS).build();
         return rs;
+
     }
 
     // Gestión de Clientes Persona
@@ -185,15 +185,55 @@ public class ClientService {
 
     }
 
+    /*
+     * @Transactional
+     * public Client createPhoneClient(String documentType, String documentId,
+     * List<ClientPhoneRQ> clientPhonesRQ){
+     * Client clientTmp =
+     * this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType,
+     * documentId);
+     * if(clientTmp == null){
+     * throw new RuntimeException("El cliente no existe");
+     * }else{
+     * 
+     * List<ClientPhone> clientPhones = this.transformClientPhoneRQ(clientPhonesRQ);
+     * clientTmp.setPhoneNumbers(clientPhones);
+     * return this.clientRepository.save(clientTmp);
+     * }
+     * }
+     */
     @Transactional
-    public Client createPhoneClient(String documentType, String documentId, List<ClientPhoneRQ> clientPhonesRQ){
-        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType, documentId);
-        if(clientTmp == null){
+    public Client updateClient(ClientRQ clientRQ, String typeDocument, String documentId) {
+        Client client = this.transformClientRQ(clientRQ);
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        if (clientTmp == null) {
             throw new RuntimeException("El cliente no existe");
-        }else{
+        } else {
+            clientTmp.setBranchId(client.getBranchId());
+            clientTmp.setFirstName(client.getFirstName());
+            clientTmp.setLastName(client.getLastName());
+            clientTmp.setGender(client.getGender());
+            clientTmp.setEmailAddress(client.getEmailAddress());
+            clientTmp.setRole(client.getRole());
+            clientTmp.setComments(client.getComments());
+            clientTmp.setLastModifiedDate(new Date());
+            //clientTmp.setState(client.getState());
+            return this.clientRepository.save(clientTmp);
+        }
+    }
 
-            List<ClientPhone> clientPhones = this.transformClientPhoneRQ(clientPhonesRQ);
-            clientTmp.setPhoneNumbers(clientPhones);
+    @Transactional
+    public Client deleteClient(String typeDocument, String documentId) {
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        if (clientTmp == null) {
+            throw new RuntimeException("El cliente no existe");
+        } else {
+            clientTmp.setState("INA");
+            clientTmp.setClosedDate(new Date());
+            clientTmp.setLastModifiedDate(new Date());
+            clientTmp.setActivationDate(null);
             return this.clientRepository.save(clientTmp);
         }
     }

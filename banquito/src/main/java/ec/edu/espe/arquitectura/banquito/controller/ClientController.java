@@ -46,12 +46,31 @@ public class ClientController {
         }
     }
 
-    @PutMapping("/phones/{typeDocument}/{documentId}")
-    public ResponseEntity<Client> clientAddPhones(@PathVariable(name = "typeDocument") String typeDocument,
-            @PathVariable(name = "documentId") String documentId,
-            @RequestBody List<ClientPhoneRQ> clientPhoneRQ) {
+    /*
+     * @PutMapping("/phones/{typeDocument}/{documentId}")
+     * public ResponseEntity<Client> clientAddPhones(@PathVariable(name =
+     * "typeDocument") String typeDocument,
+     * 
+     * @PathVariable(name = "documentId") String documentId,
+     * 
+     * @RequestBody Client client) {
+     * try {
+     * //List<ClientPhoneRQ> clientPhoneRQ = this.clientService.
+     * Client clientRS = this.clientService.createPhoneClient(typeDocument,
+     * documentId, clientPhoneRQ);
+     * return ResponseEntity.ok(clientRS);
+     * } catch (RuntimeException rte) {
+     * return ResponseEntity.badRequest().build();
+     * 
+     * }
+     * }
+     */
+    @PutMapping("/updateClient/{typeDocument}/{documentId}")
+    public ResponseEntity<Client> clientUpdate(@RequestBody ClientRQ client,
+            @PathVariable(name = "typeDocument") String typeDocument,
+            @PathVariable(name = "documentId") String documentId) {
         try {
-            Client clientRS = this.clientService.createPhoneClient(typeDocument, documentId, clientPhoneRQ);
+            Client clientRS = this.clientService.updateClient(client, typeDocument, documentId);
             return ResponseEntity.ok(clientRS);
         } catch (RuntimeException rte) {
             return ResponseEntity.badRequest().build();
@@ -59,4 +78,15 @@ public class ClientController {
         }
     }
 
+    @PutMapping("/deleteClient/{typeDocument}/{documentId}")
+    public ResponseEntity<Client> clientDelete(@PathVariable(name = "typeDocument") String typeDocument,
+            @PathVariable(name = "documentId") String documentId) {
+        try {
+            Client clientRS = this.clientService.deleteClient(typeDocument, documentId);
+            return ResponseEntity.ok(clientRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+
+        }
+    }
 }
