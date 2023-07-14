@@ -48,7 +48,6 @@ public class ClientService {
             clientPhones.add(clientPhone);
         }
         return clientPhones;
-
     }
 
     private List<ClientPhoneRS> transformPhoneRS(List<ClientPhone> phoneNumbers) {
@@ -182,5 +181,18 @@ public class ClientService {
             throw new RuntimeException("Cliente con ID " + client.getId() + " ya existe");
         }
 
+    }
+
+    @Transactional
+    public Client createPhoneClient(String documentType, String documentId, List<ClientPhoneRQ> clientPhonesRQ){
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType, documentId);
+        if(clientTmp == null){
+            throw new RuntimeException("El cliente no existe");
+        }else{
+
+            List<ClientPhone> clientPhones = this.transformClientPhoneRQ(clientPhonesRQ);
+            clientTmp.setPhoneNumbers(clientPhones);
+            return this.clientRepository.save(clientTmp);
+        }
     }
 }
