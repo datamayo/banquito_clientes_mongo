@@ -45,24 +45,6 @@ public class ClientController {
 
         }
     }
-    /*
-     * @PutMapping("/phones/{typeDocument}/{documentId}")
-     * public ResponseEntity<Client> clientAddPhones(@PathVariable(name =
-     * "typeDocument") String typeDocument,
-     * 
-     * @PathVariable(name = "documentId") String documentId,
-     * 
-     * @RequestBody ClientRQ client) {
-     * try {
-     * // List<ClientPhoneRQ> clientPhoneRQ = this.clientService.
-     * Client clientRS = this.clientService.createPhoneClient(typeDocument,
-     * documentId, client);
-     * return ResponseEntity.ok(clientRS);
-     * } catch (RuntimeException rte) {
-     * return ResponseEntity.badRequest().build();
-     * }
-     * }
-     */
 
     @PutMapping("/updateClient/{typeDocument}/{documentId}")
     public ResponseEntity<Client> clientUpdate(@RequestBody ClientRQ client,

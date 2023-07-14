@@ -2,7 +2,6 @@ package ec.edu.espe.arquitectura.banquito.service;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -82,8 +81,7 @@ public class ClientService {
         }
         return clientAddressRS;
     }
-
-    // validar cuando no hay direccion o telefono
+    
     private ClientRS transformClientRS(Client client) {
         List<ClientPhoneRS> phoneNumbersRS = this.transformPhoneRS(client.getPhoneNumbers());
         List<ClientAddressRS> addressesRS = this.transformAddressRS(client.getAddresses());
