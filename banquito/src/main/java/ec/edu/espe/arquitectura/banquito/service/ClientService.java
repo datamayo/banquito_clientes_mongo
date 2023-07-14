@@ -246,15 +246,36 @@ public class ClientService {
             return this.clientRepository.save(clientTmp);
         }
     }
+
     @Transactional
-    public Client addPhones(String typeDocument, String documentId, List<ClientPhoneRQ> phonesRQ){
+    public Client addPhones(String typeDocument, String documentId, List<ClientPhoneRQ> phonesRQ) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
                 documentId);
-        List<ClientPhone> phones = this.transformClientPhoneRQ(phonesRQ);
         if (clientTmp == null) {
             throw new RuntimeException("El cliente no existe");
         } else {
-            clientTmp.setPhoneNumbers(phones);
+            List<ClientPhone> newPhones = this.transformClientPhoneRQ(phonesRQ);
+            List<ClientPhone> phoneNumbers = clientTmp.getPhoneNumbers();
+            if (phoneNumbers == null) {
+                for (ClientPhone clientPhone : newPhones) {
+                    clientPhone.setState("ACT");
+                    clientPhone.setIsDefault(false);
+                }
+                newPhones.get(0).setIsDefault(true);
+                clientTmp.setPhoneNumbers(newPhones);
+            } else {
+                List<ClientPhone> phones = new ArrayList<>();
+                for (ClientPhone clientPhone : newPhones) {
+                    clientPhone.setState("ACT");
+                    clientPhone.setIsDefault(false);//revisar el isDefault
+                    phones.add(clientPhone);
+                }
+                for (ClientPhone clientPhone : phoneNumbers) {
+                    phones.add(clientPhone);
+                }
+                clientTmp.setPhoneNumbers(phones);
+
+            }
             return this.clientRepository.save(clientTmp);
         }
     }
