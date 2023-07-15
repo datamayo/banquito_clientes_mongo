@@ -2,7 +2,6 @@ package ec.edu.espe.arquitectura.banquito.service;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,7 +35,7 @@ public class ClientService {
         Client client = Client.builder().branchId(rq.getBranchId()).typeDocumentId(rq.getTypeDocumentId())
                 .documentId(rq.getDocumentId()).firstName(rq.getFirstName()).lastName(rq.getLastName())
                 .gender(rq.getGender()).birthDate(rq.getBirthDate()).emailAddress(rq.getEmailAddress())
-                .role(rq.getRole()).comments(rq.getComments()).build();
+                .role(rq.getRole()).comments(rq.getComments()).state(rq.getState()).build();
         return client;
 
     }
@@ -53,37 +52,39 @@ public class ClientService {
 
     private List<ClientPhoneRS> transformPhoneRS(List<ClientPhone> phoneNumbers) {
         List<ClientPhoneRS> clientPhoneRS = new ArrayList<>();
-        for (ClientPhone clientPhone : phoneNumbers) {
-            ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber())
-                    .phoneType(clientPhone.getPhoneType())
-                    .isDefault(clientPhone.getIsDefault()).state(clientPhone.getState()).build();
-            clientPhoneRS.add(rs);
+        if (phoneNumbers == null) {
+            clientPhoneRS = null;
+        } else {
+            for (ClientPhone clientPhone : phoneNumbers) {
+                ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber())
+                        .phoneType(clientPhone.getPhoneType())
+                        .isDefault(clientPhone.getIsDefault()).state(clientPhone.getState()).build();
+                clientPhoneRS.add(rs);
+            }
         }
-
         return clientPhoneRS;
-
     }
 
     private List<ClientAddressRS> transformAddressRS(List<ClientAddress> addresses) {
         List<ClientAddressRS> clientAddressRS = new ArrayList<>();
-
-        for (ClientAddress clientAddress : addresses) {
-            ClientAddressRS rs = ClientAddressRS.builder().locationId(clientAddress.getLocationId())
-                    .typeAddress(clientAddress.getTypeAddress()).line1(clientAddress.getLine1())
-                    .line2(clientAddress.getLine2()).latitude(clientAddress.getLatitude())
-                    .longitude(clientAddress.getLongitude()).isDefault(clientAddress.getIsDefault())
-                    .state(clientAddress.getState()).build();
-            clientAddressRS.add(rs);
+        if (addresses == null) {
+            clientAddressRS = null;
+        } else {
+            for (ClientAddress clientAddress : addresses) {
+                ClientAddressRS rs = ClientAddressRS.builder().locationId(clientAddress.getLocationId())
+                        .typeAddress(clientAddress.getTypeAddress()).line1(clientAddress.getLine1())
+                        .line2(clientAddress.getLine2()).latitude(clientAddress.getLatitude())
+                        .longitude(clientAddress.getLongitude()).isDefault(clientAddress.getIsDefault())
+                        .state(clientAddress.getState()).build();
+                clientAddressRS.add(rs);
+            }
         }
-
         return clientAddressRS;
     }
-
-    // validar cuando no hay direccion o telefono
+    
     private ClientRS transformClientRS(Client client) {
         List<ClientPhoneRS> phoneNumbersRS = this.transformPhoneRS(client.getPhoneNumbers());
         List<ClientAddressRS> addressesRS = this.transformAddressRS(client.getAddresses());
-
         ClientRS rs = ClientRS.builder().branchId(client.getBranchId())
                 .uniqueKey(client.getUniqueKey()).typeDocumentId(client.getTypeDocumentId())
                 .documentId(client.getDocumentId()).firstName(client.getFirstName())
@@ -94,6 +95,7 @@ public class ClientService {
                 .state(client.getState()).closedDate(client.getClosedDate()).comments(client.getComments())
                 .phoneNumbers(phoneNumbersRS).addresses(addressesRS).build();
         return rs;
+
     }
 
     // Gestión de Clientes Persona
@@ -185,15 +187,93 @@ public class ClientService {
 
     }
 
+    /*
+     * @Transactional
+     * public Client createPhoneClient(String documentType, String documentId,
+     * List<ClientPhoneRQ> clientPhonesRQ){
+     * Client clientTmp =
+     * this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType,
+     * documentId);
+     * if(clientTmp == null){
+     * throw new RuntimeException("El cliente no existe");
+     * }else{
+     * 
+     * List<ClientPhone> clientPhones = this.transformClientPhoneRQ(clientPhonesRQ);
+     * clientTmp.setPhoneNumbers(clientPhones);
+     * return this.clientRepository.save(clientTmp);
+     * }
+     * }
+     */
     @Transactional
-    public Client createPhoneClient(String documentType, String documentId, List<ClientPhoneRQ> clientPhonesRQ){
-        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType, documentId);
-        if(clientTmp == null){
+    public Client updateClient(ClientRQ clientRQ, String typeDocument, String documentId) {
+        Client client = this.transformClientRQ(clientRQ);
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        if (clientTmp == null) {
             throw new RuntimeException("El cliente no existe");
-        }else{
+        } else {
+            clientTmp.setBranchId(client.getBranchId());
+            clientTmp.setFirstName(client.getFirstName());
+            clientTmp.setLastName(client.getLastName());
+            clientTmp.setGender(client.getGender());
+            clientTmp.setEmailAddress(client.getEmailAddress());
+            clientTmp.setRole(client.getRole());
+            clientTmp.setComments(client.getComments());
+            clientTmp.setLastModifiedDate(new Date());
+            clientTmp.setState(client.getState());
+            if ("ACT".equals(client.getState())) {
+                clientTmp.setActivationDate(new Date());
+                clientTmp.setClosedDate(null);
+            }
 
-            List<ClientPhone> clientPhones = this.transformClientPhoneRQ(clientPhonesRQ);
-            clientTmp.setPhoneNumbers(clientPhones);
+            return this.clientRepository.save(clientTmp);
+        }
+    }
+
+    @Transactional
+    public Client deleteClient(String typeDocument, String documentId) {
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        if (clientTmp == null) {
+            throw new RuntimeException("El cliente no existe");
+        } else {
+            clientTmp.setState("INA");
+            clientTmp.setClosedDate(new Date());
+            clientTmp.setLastModifiedDate(new Date());
+            clientTmp.setActivationDate(null);
+            return this.clientRepository.save(clientTmp);
+        }
+    }
+
+    @Transactional
+    public Client addPhones(String typeDocument, String documentId, List<ClientPhoneRQ> phonesRQ) {
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        if (clientTmp == null) {
+            throw new RuntimeException("El cliente no existe");
+        } else {
+            List<ClientPhone> newPhones = this.transformClientPhoneRQ(phonesRQ);
+            List<ClientPhone> phoneNumbers = clientTmp.getPhoneNumbers();
+            if (phoneNumbers == null) {
+                for (ClientPhone clientPhone : newPhones) {
+                    clientPhone.setState("ACT");
+                    clientPhone.setIsDefault(false);
+                }
+                newPhones.get(0).setIsDefault(true);
+                clientTmp.setPhoneNumbers(newPhones);
+            } else {
+                List<ClientPhone> phones = new ArrayList<>();
+                for (ClientPhone clientPhone : newPhones) {
+                    clientPhone.setState("ACT");
+                    clientPhone.setIsDefault(false);//revisar el isDefault
+                    phones.add(clientPhone);
+                }
+                for (ClientPhone clientPhone : phoneNumbers) {
+                    phones.add(clientPhone);
+                }
+                clientTmp.setPhoneNumbers(phones);
+
+            }
             return this.clientRepository.save(clientTmp);
         }
     }

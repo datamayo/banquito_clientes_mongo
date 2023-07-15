@@ -46,12 +46,12 @@ public class ClientController {
         }
     }
 
-    @PutMapping("/phones/{typeDocument}/{documentId}")
-    public ResponseEntity<Client> clientAddPhones(@PathVariable(name = "typeDocument") String typeDocument,
-            @PathVariable(name = "documentId") String documentId,
-            @RequestBody List<ClientPhoneRQ> clientPhoneRQ) {
+    @PutMapping("/updateClient/{typeDocument}/{documentId}")
+    public ResponseEntity<Client> clientUpdate(@RequestBody ClientRQ client,
+            @PathVariable(name = "typeDocument") String typeDocument,
+            @PathVariable(name = "documentId") String documentId) {
         try {
-            Client clientRS = this.clientService.createPhoneClient(typeDocument, documentId, clientPhoneRQ);
+            Client clientRS = this.clientService.updateClient(client, typeDocument, documentId);
             return ResponseEntity.ok(clientRS);
         } catch (RuntimeException rte) {
             return ResponseEntity.badRequest().build();
@@ -59,4 +59,27 @@ public class ClientController {
         }
     }
 
+    @PutMapping("/deleteClient/{typeDocument}/{documentId}")
+    public ResponseEntity<Client> clientDelete(@PathVariable(name = "typeDocument") String typeDocument,
+            @PathVariable(name = "documentId") String documentId) {
+        try {
+            Client clientRS = this.clientService.deleteClient(typeDocument, documentId);
+            return ResponseEntity.ok(clientRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+
+        }
+    }
+
+    @PutMapping("/phones/{typeDocument}/{documentId}")
+    public ResponseEntity<Client> addPhones(@RequestBody List<ClientPhoneRQ> phonesRQ,
+            @PathVariable(name = "typeDocument") String typeDocument,
+            @PathVariable(name = "documentId") String documentId) {
+        try {
+            Client clientRS = this.clientService.addPhones(typeDocument, documentId, phonesRQ);
+            return ResponseEntity.ok(clientRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

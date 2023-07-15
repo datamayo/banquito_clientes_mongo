@@ -18,5 +18,5 @@ public class ClientRQ {
     private String emailAddress;
     private String role;
     private String comments;
-    
+    private String state;
 }
