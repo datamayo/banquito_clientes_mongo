@@ -31,6 +31,16 @@ public class ClientService {
         this.groupCompanyRepository = groupCompanyRepository;
     }
 
+    public ClientRS obtainClientByDocumentTypeAndDocumentId(String documentType, String documentId) {
+        Client client = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType, documentId);
+        ClientRS clientTmp = this.transformClientRS(client);
+        if (clientTmp == null) {
+            throw new RuntimeException("Parametros de búsqueda incorrectos");
+        } else {
+            return clientTmp;
+        }
+    }
+
     private Client transformClientRQ(ClientRQ rq) {
         Client client = Client.builder().branchId(rq.getBranchId()).typeDocumentId(rq.getTypeDocumentId())
                 .documentId(rq.getDocumentId()).firstName(rq.getFirstName()).lastName(rq.getLastName())
@@ -81,7 +91,7 @@ public class ClientService {
         }
         return clientAddressRS;
     }
-    
+
     private ClientRS transformClientRS(Client client) {
         List<ClientPhoneRS> phoneNumbersRS = this.transformPhoneRS(client.getPhoneNumbers());
         List<ClientAddressRS> addressesRS = this.transformAddressRS(client.getAddresses());
@@ -95,73 +105,6 @@ public class ClientService {
                 .state(client.getState()).closedDate(client.getClosedDate()).comments(client.getComments())
                 .phoneNumbers(phoneNumbersRS).addresses(addressesRS).build();
         return rs;
-
-    }
-
-    // Gestión de Clientes Persona
-    /*
-     * public Client listByDocumentTypeAndDocumentId(String documentType, String
-     * documentId) {
-     * Client clientTmp =
-     * this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType,
-     * documentId);
-     * if (clientTmp == null) {
-     * throw new RuntimeException("Parametros de búsqueda incorrectos");
-     * } else {
-     * return clientTmp;
-     * }
-     * 
-     * }
-     * 
-     * @Transactional
-     * public Client clientCreate(Client client) {
-     * Client clientTmp =
-     * this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(client.
-     * getTypeDocumentId(),
-     * client.getDocumentId());
-     * if (clientTmp == null) {
-     * if (client.getBirthDate().after(new Date())) {
-     * throw new RuntimeException("La fecha de nacimiento es incorrecta");
-     * }
-     * client.setCreationDate(new Date());
-     * client.setLastModifiedDate(new Date());
-     * client.setActivationDate(new Date());
-     * client.setState("ACT");
-     * List<ClientAddress> addresses = client.getAddresses();
-     * Iterator<ClientAddress> addressIterator = addresses.iterator();
-     * while(addressIterator.hasNext()){
-     * addressIterator.next().setState("ACT");
-     * }
-     * List<ClientPhone> phones = client.getPhoneNumbers();
-     * Iterator<ClientPhone> phonesIterator = phones.iterator();
-     * while(phonesIterator.hasNext()){
-     * phonesIterator.next().setState("ACT");
-     * }
-     * List<GroupCompanyMember> groups = client.getGroupCompanyMember();
-     * if(groups != null ){
-     * for(GroupCompanyMember groupsIterator : groups){
-     * groupsIterator.setCreationDate(new Date());
-     * groupsIterator.setLastModifiedDate(new Date());
-     * groupsIterator.setState("ACT");
-     * }
-     * }
-     * 
-     * return this.clientRepository.save(client);
-     * } else {
-     * throw new RuntimeException("Cliente con ID " + client.getId() +
-     * " ya existe");
-     * }
-     * 
-     * }
-     */
-    public ClientRS obtainClientByDocumentTypeAndDocumentId(String documentType, String documentId) {
-        Client client = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType, documentId);
-        ClientRS clientTmp = this.transformClientRS(client);
-        if (clientTmp == null) {
-            throw new RuntimeException("Parametros de búsqueda incorrectos");
-        } else {
-            return clientTmp;
-        }
 
     }
 
@@ -187,23 +130,6 @@ public class ClientService {
 
     }
 
-    /*
-     * @Transactional
-     * public Client createPhoneClient(String documentType, String documentId,
-     * List<ClientPhoneRQ> clientPhonesRQ){
-     * Client clientTmp =
-     * this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType,
-     * documentId);
-     * if(clientTmp == null){
-     * throw new RuntimeException("El cliente no existe");
-     * }else{
-     * 
-     * List<ClientPhone> clientPhones = this.transformClientPhoneRQ(clientPhonesRQ);
-     * clientTmp.setPhoneNumbers(clientPhones);
-     * return this.clientRepository.save(clientTmp);
-     * }
-     * }
-     */
     @Transactional
     public Client updateClient(ClientRQ clientRQ, String typeDocument, String documentId) {
         Client client = this.transformClientRQ(clientRQ);
@@ -265,7 +191,7 @@ public class ClientService {
                 List<ClientPhone> phones = new ArrayList<>();
                 for (ClientPhone clientPhone : newPhones) {
                     clientPhone.setState("ACT");
-                    clientPhone.setIsDefault(false);//revisar el isDefault
+                    clientPhone.setIsDefault(false);// revisar el isDefault
                     phones.add(clientPhone);
                 }
                 for (ClientPhone clientPhone : phoneNumbers) {
@@ -277,4 +203,61 @@ public class ClientService {
             return this.clientRepository.save(clientTmp);
         }
     }
+
 }
+// Gestión de Clientes Persona
+/*
+ * public Client listByDocumentTypeAndDocumentId(String documentType, String
+ * documentId) {
+ * Client clientTmp =
+ * this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType,
+ * documentId);
+ * if (clientTmp == null) {
+ * throw new RuntimeException("Parametros de búsqueda incorrectos");
+ * } else {
+ * return clientTmp;
+ * }
+ * 
+ * }
+ * 
+ * @Transactional
+ * public Client clientCreate(Client client) {
+ * Client clientTmp =
+ * this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(client.
+ * getTypeDocumentId(),
+ * client.getDocumentId());
+ * if (clientTmp == null) {
+ * if (client.getBirthDate().after(new Date())) {
+ * throw new RuntimeException("La fecha de nacimiento es incorrecta");
+ * }
+ * client.setCreationDate(new Date());
+ * client.setLastModifiedDate(new Date());
+ * client.setActivationDate(new Date());
+ * client.setState("ACT");
+ * List<ClientAddress> addresses = client.getAddresses();
+ * Iterator<ClientAddress> addressIterator = addresses.iterator();
+ * while(addressIterator.hasNext()){
+ * addressIterator.next().setState("ACT");
+ * }
+ * List<ClientPhone> phones = client.getPhoneNumbers();
+ * Iterator<ClientPhone> phonesIterator = phones.iterator();
+ * while(phonesIterator.hasNext()){
+ * phonesIterator.next().setState("ACT");
+ * }
+ * List<GroupCompanyMember> groups = client.getGroupCompanyMember();
+ * if(groups != null ){
+ * for(GroupCompanyMember groupsIterator : groups){
+ * groupsIterator.setCreationDate(new Date());
+ * groupsIterator.setLastModifiedDate(new Date());
+ * groupsIterator.setState("ACT");
+ * }
+ * }
+ * 
+ * return this.clientRepository.save(client);
+ * } else {
+ * throw new RuntimeException("Cliente con ID " + client.getId() +
+ * " ya existe");
+ * }
+ * 
+ * }
+ */

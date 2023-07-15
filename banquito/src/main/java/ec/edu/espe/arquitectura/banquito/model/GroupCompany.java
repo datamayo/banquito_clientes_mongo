@@ -40,7 +40,7 @@ public class GroupCompany {
     @Version
     private Long version;
 
-    //private List<GroupCompanyMember> groupCompanyMember;
+    private List<GroupCompanyMember> members;
 
 
 }
