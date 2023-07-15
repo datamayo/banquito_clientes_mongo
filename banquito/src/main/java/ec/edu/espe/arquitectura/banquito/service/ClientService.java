@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ec.edu.espe.arquitectura.banquito.dto.ClientAddressRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientAddressRS;
 import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRS;
@@ -39,6 +40,9 @@ public class ClientService {
         if (clientTmp == null) {
             throw new RuntimeException("Parametros de búsqueda incorrectos");
         } else {
+            if ("INA".equals(clientTmp.getState())) {
+                throw new RuntimeException("El cliente ya no se encuentra disponible");
+            }
             return clientTmp;
         }
     }
@@ -118,20 +122,19 @@ public class ClientService {
         if (clientTmp == null) {
             throw new RuntimeException("El cliente no existe");
         } else {
-            List<ClientPhone> newPhones = this.transformClientPhoneRQ(phonesRQ);
+            List<ClientPhone> newPhones = this.transformClientPhonesRQ(phonesRQ);
             List<ClientPhone> phoneNumbers = clientTmp.getPhoneNumbers();
             List<String> allNumbers = new ArrayList<>();
             if (phoneNumbers == null) {
                 for (ClientPhone clientPhone : newPhones) {
                     clientPhone.setState("ACT");
-                    clientPhone.setIsDefault(false);
                     allNumbers.add(clientPhone.getPhoneNumber());
+
                 }
-                
+
                 if (this.hasDuplicates(allNumbers)) {
                     throw new RuntimeException("Existen teléfonos repetidos, volver a intentar");
                 } else {
-                    newPhones.get(0).setIsDefault(true);
                     clientTmp.setPhoneNumbers(newPhones);
                 }
 
@@ -139,7 +142,6 @@ public class ClientService {
                 List<ClientPhone> phones = new ArrayList<>();
                 for (ClientPhone clientPhone : newPhones) {
                     clientPhone.setState("ACT");
-                    clientPhone.setIsDefault(false);// revisar el isDefault
                     phones.add(clientPhone);
                     allNumbers.add(clientPhone.getPhoneNumber());
                 }
@@ -147,27 +149,125 @@ public class ClientService {
                     phones.add(clientPhone);
                     allNumbers.add(clientPhone.getPhoneNumber());
                 }
-                if(this.hasDuplicates(allNumbers)){
+                if (this.hasDuplicates(allNumbers)) {
                     throw new RuntimeException("Existen teléfonos repetidos, volver a intentar");
-                }else{
+                } else {
                     clientTmp.setPhoneNumbers(phones);
                 }
             }
             return this.clientRepository.save(clientTmp);
         }
     }
-/* 
-    @Transactional
-    public Client updatePhone(String typeDocument, String documentId, ClientPhoneRQ phoneRQ){
-         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
-                documentId);
-        if(clientTmp == null){
-            throw new RuntimeException("El cliente no existe");
-        }else{
 
+    @Transactional
+    public void updatePhone(String typeDocument, String documentId, String phoneNumber, ClientPhoneRQ phoneRQ) {
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        if (clientTmp == null) {
+            throw new RuntimeException("El cliente no existe");
+        } else {
+            ClientPhone phoneUpdate = this.transformUpdatePhoneRQ(phoneRQ);
+            List<ClientPhone> phoneNumbers = clientTmp.getPhoneNumbers();
+            if (phoneNumbers == null) {
+                throw new RuntimeException("No existen números telefónicos para modificar");
+            } else {
+                Boolean phoneNumberExists = false;
+                for (ClientPhone clientPhone : phoneNumbers) {
+                    if (phoneNumber.equals(clientPhone.getPhoneNumber())) {
+                        clientPhone.setIsDefault(phoneUpdate.getIsDefault());
+                        clientPhone.setState(phoneUpdate.getState());
+                        phoneNumberExists = true;
+                        break;
+                    }
+
+                }
+                if (!phoneNumberExists) {
+                    throw new RuntimeException("No existe el número de teléfono " + phoneNumber);
+                }
+            }
+            this.clientRepository.save(clientTmp);
         }
     }
-*/
+
+    @Transactional
+    public Client addAddresses(String typeDocument, String documentId, List<ClientAddressRQ> addressesRQ) {
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        if (clientTmp == null) {
+            throw new RuntimeException("El cliente no existe");
+        } else {
+            List<ClientAddress> newAddresses = this.transformClientAddressesRQ(addressesRQ);
+            List<ClientAddress> addresses = clientTmp.getAddresses();
+            List<String> allLine1 = new ArrayList<>();
+            List<String> allLine2 = new ArrayList<>();
+            if (addresses == null) {
+                for (ClientAddress clientAddress : newAddresses) {
+                    clientAddress.setState("ACT");
+                    allLine1.add(clientAddress.getLine1());
+                    allLine2.add(clientAddress.getLine2());
+                }
+
+                if (this.hasDuplicates(allLine1) == true && this.hasDuplicates(allLine2) == true) {
+                    throw new RuntimeException("Existen direcciones repetidas, volver a intentar");
+                } else {
+                    clientTmp.setAddresses(newAddresses);
+                }
+
+            } else {
+                List<ClientAddress> allAddresses = new ArrayList<>();
+                for (ClientAddress clientAddress : newAddresses) {
+                    clientAddress.setState("ACT");
+                    allAddresses.add(clientAddress);
+                    allLine1.add(clientAddress.getLine1());
+                    allLine2.add(clientAddress.getLine2());
+                }
+                for (ClientAddress clientAddress : addresses) {
+                    allAddresses.add(clientAddress);
+                    allLine1.add(clientAddress.getLine1());
+                    allLine2.add(clientAddress.getLine2());
+                }
+                if (this.hasDuplicates(allLine1) == true && this.hasDuplicates(allLine2)) {
+                    throw new RuntimeException("Existen direcciones repetidas, volver a intentar");
+                } else {
+                    clientTmp.setAddresses(allAddresses);
+                }
+            }
+            return this.clientRepository.save(clientTmp);
+        }
+    }
+
+    @Transactional
+    public void updateAddress(String typeDocument, String documentId, String line1, String line2,
+            ClientAddressRQ addressRQ) {
+        Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        if (clientTmp == null) {
+            throw new RuntimeException("El cliente no existe");
+        } else {
+            ClientAddress addressUpdate = this.transformUpdateAddressRQ(addressRQ);
+            List<ClientAddress> addresses = clientTmp.getAddresses();
+            if (addresses == null) {
+                throw new RuntimeException("No existen direcciones para modificar");
+            } else {
+                Boolean addressExists = false;
+                for (ClientAddress clientAddress : addresses) {
+                    if (clientAddress.getLine1().equals(line1) && clientAddress.getLine2().equals(line2)) {
+                        clientAddress.setTypeAddress(addressUpdate.getTypeAddress());
+                        clientAddress.setIsDefault(addressUpdate.getIsDefault());
+                        clientAddress.setState(addressUpdate.getState());
+                        addressExists = true;
+                        break;
+                    }
+                }
+                if (!addressExists) {
+                    throw new RuntimeException("No existe la dirección " + line1 + " " + line2);
+                }
+
+            }
+            this.clientRepository.save(clientTmp);
+        }
+    }
+
     private Client transformClientRQ(ClientRQ rq) {
         Client client = Client.builder().branchId(rq.getBranchId()).typeDocumentId(rq.getTypeDocumentId())
                 .documentId(rq.getDocumentId()).firstName(rq.getFirstName()).lastName(rq.getLastName())
@@ -177,17 +277,42 @@ public class ClientService {
 
     }
 
-    private List<ClientPhone> transformClientPhoneRQ(List<ClientPhoneRQ> rq) {
+    private List<ClientPhone> transformClientPhonesRQ(List<ClientPhoneRQ> rq) {
         List<ClientPhone> clientPhones = new ArrayList<>();
         for (ClientPhoneRQ clientPhoneRQ : rq) {
             ClientPhone clientPhone = ClientPhone.builder().phoneNumber(clientPhoneRQ.getPhoneNumber())
-                    .phoneType(clientPhoneRQ.getPhoneType()).build();
+                    .phoneType(clientPhoneRQ.getPhoneType()).state(clientPhoneRQ.getState())
+                    .isDefault(clientPhoneRQ.getIsDefault()).build();
             clientPhones.add(clientPhone);
         }
         return clientPhones;
     }
 
-    private List<ClientPhoneRS> transformPhoneRS(List<ClientPhone> phoneNumbers) {
+    private List<ClientAddress> transformClientAddressesRQ(List<ClientAddressRQ> rq) {
+        List<ClientAddress> clientAddresses = new ArrayList<>();
+        for (ClientAddressRQ clientAddressRQ : rq) {
+            ClientAddress clientAddress = ClientAddress.builder().locationId(clientAddressRQ.getLocationId())
+                    .typeAddress(clientAddressRQ.getTypeAddress())
+                    .line1(clientAddressRQ.getLine1()).line2(clientAddressRQ.getLine2())
+                    .latitude(clientAddressRQ.getLatitude()).longitude(clientAddressRQ.getLongitude())
+                    .isDefault(clientAddressRQ.getIsDefault()).state(clientAddressRQ.getState()).build();
+            clientAddresses.add(clientAddress);
+        }
+        return clientAddresses;
+    }
+
+    private ClientPhone transformUpdatePhoneRQ(ClientPhoneRQ rq) {
+        ClientPhone clientPhone = ClientPhone.builder().state(rq.getState()).isDefault(rq.getIsDefault()).build();
+        return clientPhone;
+    }
+
+    private ClientAddress transformUpdateAddressRQ(ClientAddressRQ rq) {
+        ClientAddress clientAddress = ClientAddress.builder().state(rq.getState()).isDefault(rq.getIsDefault())
+                .typeAddress(rq.getTypeAddress()).build();
+        return clientAddress;
+    }
+
+    private List<ClientPhoneRS> transformPhonesRS(List<ClientPhone> phoneNumbers) {
         List<ClientPhoneRS> clientPhoneRS = new ArrayList<>();
         if (phoneNumbers == null) {
             clientPhoneRS = null;
@@ -202,7 +327,7 @@ public class ClientService {
         return clientPhoneRS;
     }
 
-    private List<ClientAddressRS> transformAddressRS(List<ClientAddress> addresses) {
+    private List<ClientAddressRS> transformAddressesRS(List<ClientAddress> addresses) {
         List<ClientAddressRS> clientAddressRS = new ArrayList<>();
         if (addresses == null) {
             clientAddressRS = null;
@@ -220,8 +345,8 @@ public class ClientService {
     }
 
     private ClientRS transformClientRS(Client client) {
-        List<ClientPhoneRS> phoneNumbersRS = this.transformPhoneRS(client.getPhoneNumbers());
-        List<ClientAddressRS> addressesRS = this.transformAddressRS(client.getAddresses());
+        List<ClientPhoneRS> phoneNumbersRS = this.transformPhonesRS(client.getPhoneNumbers());
+        List<ClientAddressRS> addressesRS = this.transformAddressesRS(client.getAddresses());
         ClientRS rs = ClientRS.builder().branchId(client.getBranchId())
                 .uniqueKey(client.getUniqueKey()).typeDocumentId(client.getTypeDocumentId())
                 .documentId(client.getDocumentId()).firstName(client.getFirstName())

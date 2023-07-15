@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ec.edu.espe.arquitectura.banquito.dto.ClientAddressRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRS;
@@ -82,6 +83,44 @@ public class ClientController {
         try {
             Client clientRS = this.clientService.addPhones(typeDocument, documentId, phonesRQ);
             return ResponseEntity.ok(clientRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/updatePhone/{typeDocument}/{documentId}/{phoneNumber}")
+    public ResponseEntity<String> updatePhone(@RequestBody ClientPhoneRQ phoneRQ,
+            @PathVariable(name = "typeDocument") String typeDocument,
+            @PathVariable(name = "documentId") String documentId,
+            @PathVariable(name = "phoneNumber") String phoneNumber) {
+        try {
+            this.clientService.updatePhone(typeDocument, documentId, phoneNumber, phoneRQ);
+            return ResponseEntity.ok("Teléfono actualizado");
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/addresses/{typeDocument}/{documentId}")
+    public ResponseEntity<Client> addAddresses(@RequestBody List<ClientAddressRQ> addressesRQ,
+            @PathVariable(name = "typeDocument") String typeDocument,
+            @PathVariable(name = "documentId") String documentId) {
+        try {
+            Client clientRS = this.clientService.addAddresses(typeDocument, documentId, addressesRQ);
+            return ResponseEntity.ok(clientRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+     @PutMapping("/updateAddress/{typeDocument}/{documentId}/{line1}/{line2}")
+    public ResponseEntity<String> updateAddress(@RequestBody ClientAddressRQ addressRQ,
+            @PathVariable(name = "typeDocument") String typeDocument,
+            @PathVariable(name = "documentId") String documentId,
+            @PathVariable(name = "line1") String line1, @PathVariable(name = "line2") String line2) {
+        try {
+            this.clientService.updateAddress(typeDocument, documentId, line1, line2, addressRQ);
+            return ResponseEntity.ok("Dirección actualizada");
         } catch (RuntimeException rte) {
             return ResponseEntity.badRequest().build();
         }
