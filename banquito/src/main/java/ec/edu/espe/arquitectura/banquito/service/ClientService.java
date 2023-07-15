@@ -2,7 +2,9 @@ package ec.edu.espe.arquitectura.banquito.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -41,71 +43,9 @@ public class ClientService {
         }
     }
 
-    private Client transformClientRQ(ClientRQ rq) {
-        Client client = Client.builder().branchId(rq.getBranchId()).typeDocumentId(rq.getTypeDocumentId())
-                .documentId(rq.getDocumentId()).firstName(rq.getFirstName()).lastName(rq.getLastName())
-                .gender(rq.getGender()).birthDate(rq.getBirthDate()).emailAddress(rq.getEmailAddress())
-                .role(rq.getRole()).comments(rq.getComments()).state(rq.getState()).build();
-        return client;
-
-    }
-
-    private List<ClientPhone> transformClientPhoneRQ(List<ClientPhoneRQ> rq) {
-        List<ClientPhone> clientPhones = new ArrayList<>();
-        for (ClientPhoneRQ clientPhoneRQ : rq) {
-            ClientPhone clientPhone = ClientPhone.builder().phoneNumber(clientPhoneRQ.getPhoneNumber())
-                    .phoneType(clientPhoneRQ.getPhoneType()).build();
-            clientPhones.add(clientPhone);
-        }
-        return clientPhones;
-    }
-
-    private List<ClientPhoneRS> transformPhoneRS(List<ClientPhone> phoneNumbers) {
-        List<ClientPhoneRS> clientPhoneRS = new ArrayList<>();
-        if (phoneNumbers == null) {
-            clientPhoneRS = null;
-        } else {
-            for (ClientPhone clientPhone : phoneNumbers) {
-                ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber())
-                        .phoneType(clientPhone.getPhoneType())
-                        .isDefault(clientPhone.getIsDefault()).state(clientPhone.getState()).build();
-                clientPhoneRS.add(rs);
-            }
-        }
-        return clientPhoneRS;
-    }
-
-    private List<ClientAddressRS> transformAddressRS(List<ClientAddress> addresses) {
-        List<ClientAddressRS> clientAddressRS = new ArrayList<>();
-        if (addresses == null) {
-            clientAddressRS = null;
-        } else {
-            for (ClientAddress clientAddress : addresses) {
-                ClientAddressRS rs = ClientAddressRS.builder().locationId(clientAddress.getLocationId())
-                        .typeAddress(clientAddress.getTypeAddress()).line1(clientAddress.getLine1())
-                        .line2(clientAddress.getLine2()).latitude(clientAddress.getLatitude())
-                        .longitude(clientAddress.getLongitude()).isDefault(clientAddress.getIsDefault())
-                        .state(clientAddress.getState()).build();
-                clientAddressRS.add(rs);
-            }
-        }
-        return clientAddressRS;
-    }
-
-    private ClientRS transformClientRS(Client client) {
-        List<ClientPhoneRS> phoneNumbersRS = this.transformPhoneRS(client.getPhoneNumbers());
-        List<ClientAddressRS> addressesRS = this.transformAddressRS(client.getAddresses());
-        ClientRS rs = ClientRS.builder().branchId(client.getBranchId())
-                .uniqueKey(client.getUniqueKey()).typeDocumentId(client.getTypeDocumentId())
-                .documentId(client.getDocumentId()).firstName(client.getFirstName())
-                .lastName(client.getLastName()).gender(client.getGender()).birthDate(client.getBirthDate())
-                .emailAddress(client.getEmailAddress())
-                .creationDate(client.getCreationDate()).activationDate(client.getActivationDate())
-                .lastModifiedDate(client.getLastModifiedDate()).role(client.getRole())
-                .state(client.getState()).closedDate(client.getClosedDate()).comments(client.getComments())
-                .phoneNumbers(phoneNumbersRS).addresses(addressesRS).build();
-        return rs;
-
+    public Boolean hasDuplicates(List<?> list) {
+        Set<Object> set = new HashSet<>(list);
+        return set.size() < list.size();
     }
 
     @Transactional
@@ -180,28 +120,119 @@ public class ClientService {
         } else {
             List<ClientPhone> newPhones = this.transformClientPhoneRQ(phonesRQ);
             List<ClientPhone> phoneNumbers = clientTmp.getPhoneNumbers();
+            List<String> allNumbers = new ArrayList<>();
             if (phoneNumbers == null) {
                 for (ClientPhone clientPhone : newPhones) {
                     clientPhone.setState("ACT");
                     clientPhone.setIsDefault(false);
+                    allNumbers.add(clientPhone.getPhoneNumber());
                 }
-                newPhones.get(0).setIsDefault(true);
-                clientTmp.setPhoneNumbers(newPhones);
+                
+                if (this.hasDuplicates(allNumbers)) {
+                    throw new RuntimeException("Existen teléfonos repetidos, volver a intentar");
+                } else {
+                    newPhones.get(0).setIsDefault(true);
+                    clientTmp.setPhoneNumbers(newPhones);
+                }
+
             } else {
                 List<ClientPhone> phones = new ArrayList<>();
                 for (ClientPhone clientPhone : newPhones) {
                     clientPhone.setState("ACT");
                     clientPhone.setIsDefault(false);// revisar el isDefault
                     phones.add(clientPhone);
+                    allNumbers.add(clientPhone.getPhoneNumber());
                 }
                 for (ClientPhone clientPhone : phoneNumbers) {
                     phones.add(clientPhone);
+                    allNumbers.add(clientPhone.getPhoneNumber());
                 }
-                clientTmp.setPhoneNumbers(phones);
-
+                if(this.hasDuplicates(allNumbers)){
+                    throw new RuntimeException("Existen teléfonos repetidos, volver a intentar");
+                }else{
+                    clientTmp.setPhoneNumbers(phones);
+                }
             }
             return this.clientRepository.save(clientTmp);
         }
+    }
+/* 
+    @Transactional
+    public Client updatePhone(String typeDocument, String documentId, ClientPhoneRQ phoneRQ){
+         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
+                documentId);
+        if(clientTmp == null){
+            throw new RuntimeException("El cliente no existe");
+        }else{
+
+        }
+    }
+*/
+    private Client transformClientRQ(ClientRQ rq) {
+        Client client = Client.builder().branchId(rq.getBranchId()).typeDocumentId(rq.getTypeDocumentId())
+                .documentId(rq.getDocumentId()).firstName(rq.getFirstName()).lastName(rq.getLastName())
+                .gender(rq.getGender()).birthDate(rq.getBirthDate()).emailAddress(rq.getEmailAddress())
+                .role(rq.getRole()).comments(rq.getComments()).state(rq.getState()).build();
+        return client;
+
+    }
+
+    private List<ClientPhone> transformClientPhoneRQ(List<ClientPhoneRQ> rq) {
+        List<ClientPhone> clientPhones = new ArrayList<>();
+        for (ClientPhoneRQ clientPhoneRQ : rq) {
+            ClientPhone clientPhone = ClientPhone.builder().phoneNumber(clientPhoneRQ.getPhoneNumber())
+                    .phoneType(clientPhoneRQ.getPhoneType()).build();
+            clientPhones.add(clientPhone);
+        }
+        return clientPhones;
+    }
+
+    private List<ClientPhoneRS> transformPhoneRS(List<ClientPhone> phoneNumbers) {
+        List<ClientPhoneRS> clientPhoneRS = new ArrayList<>();
+        if (phoneNumbers == null) {
+            clientPhoneRS = null;
+        } else {
+            for (ClientPhone clientPhone : phoneNumbers) {
+                ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber())
+                        .phoneType(clientPhone.getPhoneType())
+                        .isDefault(clientPhone.getIsDefault()).state(clientPhone.getState()).build();
+                clientPhoneRS.add(rs);
+            }
+        }
+        return clientPhoneRS;
+    }
+
+    private List<ClientAddressRS> transformAddressRS(List<ClientAddress> addresses) {
+        List<ClientAddressRS> clientAddressRS = new ArrayList<>();
+        if (addresses == null) {
+            clientAddressRS = null;
+        } else {
+            for (ClientAddress clientAddress : addresses) {
+                ClientAddressRS rs = ClientAddressRS.builder().locationId(clientAddress.getLocationId())
+                        .typeAddress(clientAddress.getTypeAddress()).line1(clientAddress.getLine1())
+                        .line2(clientAddress.getLine2()).latitude(clientAddress.getLatitude())
+                        .longitude(clientAddress.getLongitude()).isDefault(clientAddress.getIsDefault())
+                        .state(clientAddress.getState()).build();
+                clientAddressRS.add(rs);
+            }
+        }
+        return clientAddressRS;
+    }
+
+    private ClientRS transformClientRS(Client client) {
+        List<ClientPhoneRS> phoneNumbersRS = this.transformPhoneRS(client.getPhoneNumbers());
+        List<ClientAddressRS> addressesRS = this.transformAddressRS(client.getAddresses());
+        ClientRS rs = ClientRS.builder().branchId(client.getBranchId())
+                .uniqueKey(client.getUniqueKey()).typeDocumentId(client.getTypeDocumentId())
+                .documentId(client.getDocumentId()).firstName(client.getFirstName())
+                .lastName(client.getLastName()).gender(client.getGender()).birthDate(client.getBirthDate())
+                .emailAddress(client.getEmailAddress())
+                .creationDate(client.getCreationDate()).activationDate(client.getActivationDate())
+                .lastModifiedDate(client.getLastModifiedDate()).role(client.getRole())
+                .state(client.getState()).closedDate(client.getClosedDate()).comments(client.getComments())
+                .phoneNumbers(phoneNumbersRS).addresses(addressesRS).build();
+        return rs;
+
     }
 
 }
