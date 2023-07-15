@@ -30,8 +30,12 @@ public class ClientController {
     public ResponseEntity<ClientRS> obtainByDocumentTypeAndDocumentId(
             @PathVariable(name = "documentType") String documentType,
             @PathVariable(name = "documentId") String documentId) {
-        ClientRS client = this.clientService.obtainClientByDocumentTypeAndDocumentId(documentType, documentId);
-        return ResponseEntity.ok(client);
+        try {
+            ClientRS client = this.clientService.obtainClientByDocumentTypeAndDocumentId(documentType, documentId);
+            return ResponseEntity.ok(client);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.notFound().build();
+        }
 
     }
 
