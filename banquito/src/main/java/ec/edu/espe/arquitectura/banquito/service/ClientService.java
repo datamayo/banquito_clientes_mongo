@@ -16,6 +16,7 @@ import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRS;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRS;
+import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyMemberRQ;
 import ec.edu.espe.arquitectura.banquito.model.Client;
 import ec.edu.espe.arquitectura.banquito.model.ClientAddress;
 import ec.edu.espe.arquitectura.banquito.model.ClientPhone;
@@ -34,6 +35,12 @@ public class ClientService {
         this.groupCompanyRepository = groupCompanyRepository;
     }
 
+    public Boolean hasDuplicates(List<?> list) {
+        Set<Object> set = new HashSet<>(list);
+        return set.size() < list.size();
+    }
+
+    // Métodos Get para Clientes
     public ClientRS obtainClientByDocumentTypeAndDocumentId(String documentType, String documentId) {
         Client client = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(documentType, documentId);
         ClientRS clientTmp = this.transformClientRS(client);
@@ -47,11 +54,7 @@ public class ClientService {
         }
     }
 
-    public Boolean hasDuplicates(List<?> list) {
-        Set<Object> set = new HashSet<>(list);
-        return set.size() < list.size();
-    }
-
+    // Método create para clientes
     @Transactional
     public Client clientCreate(ClientRQ clientRQ) {
         Client client = this.transformClientRQ(clientRQ);
@@ -74,6 +77,7 @@ public class ClientService {
 
     }
 
+    // Método update clientes
     @Transactional
     public Client updateClient(ClientRQ clientRQ, String typeDocument, String documentId) {
         Client client = this.transformClientRQ(clientRQ);
@@ -100,6 +104,7 @@ public class ClientService {
         }
     }
 
+    // Método delete para clientes
     @Transactional
     public Client deleteClient(String typeDocument, String documentId) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
@@ -115,6 +120,7 @@ public class ClientService {
         }
     }
 
+    // Método para agreagr números telefónicos a un cliente
     @Transactional
     public Client addPhones(String typeDocument, String documentId, List<ClientPhoneRQ> phonesRQ) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
@@ -159,6 +165,7 @@ public class ClientService {
         }
     }
 
+    // Método para modificar/borrar un teléfono de un cliente
     @Transactional
     public void updatePhone(String typeDocument, String documentId, String phoneNumber, ClientPhoneRQ phoneRQ) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
@@ -189,6 +196,7 @@ public class ClientService {
         }
     }
 
+    // Método para agregar direcciones
     @Transactional
     public Client addAddresses(String typeDocument, String documentId, List<ClientAddressRQ> addressesRQ) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
@@ -236,6 +244,7 @@ public class ClientService {
         }
     }
 
+    // Método para modificar/borrar una dirección de un cliente
     @Transactional
     public void updateAddress(String typeDocument, String documentId, String line1, String line2,
             ClientAddressRQ addressRQ) {
@@ -268,6 +277,9 @@ public class ClientService {
         }
     }
 
+    // Método para agregar un cliente como miembro de una compañia
+
+    // funciones para la gestión de clientes
     private Client transformClientRQ(ClientRQ rq) {
         Client client = Client.builder().branchId(rq.getBranchId()).typeDocumentId(rq.getTypeDocumentId())
                 .documentId(rq.getDocumentId()).firstName(rq.getFirstName()).lastName(rq.getLastName())
@@ -288,6 +300,23 @@ public class ClientService {
         return clientPhones;
     }
 
+    private ClientRS transformClientRS(Client client) {
+        List<ClientPhoneRS> phoneNumbersRS = this.transformPhonesRS(client.getPhoneNumbers());
+        List<ClientAddressRS> addressesRS = this.transformAddressesRS(client.getAddresses());
+        ClientRS rs = ClientRS.builder().branchId(client.getBranchId())
+                .uniqueKey(client.getUniqueKey()).typeDocumentId(client.getTypeDocumentId())
+                .documentId(client.getDocumentId()).firstName(client.getFirstName())
+                .lastName(client.getLastName()).gender(client.getGender()).birthDate(client.getBirthDate())
+                .emailAddress(client.getEmailAddress())
+                .creationDate(client.getCreationDate()).activationDate(client.getActivationDate())
+                .lastModifiedDate(client.getLastModifiedDate()).role(client.getRole())
+                .state(client.getState()).closedDate(client.getClosedDate()).comments(client.getComments())
+                .phoneNumbers(phoneNumbersRS).addresses(addressesRS).build();
+        return rs;
+
+    }
+
+    // funciones para la gestión de direcciones
     private List<ClientAddress> transformClientAddressesRQ(List<ClientAddressRQ> rq) {
         List<ClientAddress> clientAddresses = new ArrayList<>();
         for (ClientAddressRQ clientAddressRQ : rq) {
@@ -301,30 +330,10 @@ public class ClientService {
         return clientAddresses;
     }
 
-    private ClientPhone transformUpdatePhoneRQ(ClientPhoneRQ rq) {
-        ClientPhone clientPhone = ClientPhone.builder().state(rq.getState()).isDefault(rq.getIsDefault()).build();
-        return clientPhone;
-    }
-
     private ClientAddress transformUpdateAddressRQ(ClientAddressRQ rq) {
         ClientAddress clientAddress = ClientAddress.builder().state(rq.getState()).isDefault(rq.getIsDefault())
                 .typeAddress(rq.getTypeAddress()).build();
         return clientAddress;
-    }
-
-    private List<ClientPhoneRS> transformPhonesRS(List<ClientPhone> phoneNumbers) {
-        List<ClientPhoneRS> clientPhoneRS = new ArrayList<>();
-        if (phoneNumbers == null) {
-            clientPhoneRS = null;
-        } else {
-            for (ClientPhone clientPhone : phoneNumbers) {
-                ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber())
-                        .phoneType(clientPhone.getPhoneType())
-                        .isDefault(clientPhone.getIsDefault()).state(clientPhone.getState()).build();
-                clientPhoneRS.add(rs);
-            }
-        }
-        return clientPhoneRS;
     }
 
     private List<ClientAddressRS> transformAddressesRS(List<ClientAddress> addresses) {
@@ -344,21 +353,45 @@ public class ClientService {
         return clientAddressRS;
     }
 
-    private ClientRS transformClientRS(Client client) {
-        List<ClientPhoneRS> phoneNumbersRS = this.transformPhonesRS(client.getPhoneNumbers());
-        List<ClientAddressRS> addressesRS = this.transformAddressesRS(client.getAddresses());
-        ClientRS rs = ClientRS.builder().branchId(client.getBranchId())
-                .uniqueKey(client.getUniqueKey()).typeDocumentId(client.getTypeDocumentId())
-                .documentId(client.getDocumentId()).firstName(client.getFirstName())
-                .lastName(client.getLastName()).gender(client.getGender()).birthDate(client.getBirthDate())
-                .emailAddress(client.getEmailAddress())
-                .creationDate(client.getCreationDate()).activationDate(client.getActivationDate())
-                .lastModifiedDate(client.getLastModifiedDate()).role(client.getRole())
-                .state(client.getState()).closedDate(client.getClosedDate()).comments(client.getComments())
-                .phoneNumbers(phoneNumbersRS).addresses(addressesRS).build();
-        return rs;
-
+    // funciones para la gestió de teléfonos
+    private ClientPhone transformUpdatePhoneRQ(ClientPhoneRQ rq) {
+        ClientPhone clientPhone = ClientPhone.builder().state(rq.getState()).isDefault(rq.getIsDefault()).build();
+        return clientPhone;
     }
+
+    private List<ClientPhoneRS> transformPhonesRS(List<ClientPhone> phoneNumbers) {
+        List<ClientPhoneRS> clientPhoneRS = new ArrayList<>();
+        if (phoneNumbers == null) {
+            clientPhoneRS = null;
+        } else {
+            for (ClientPhone clientPhone : phoneNumbers) {
+                ClientPhoneRS rs = ClientPhoneRS.builder().phoneNumber(clientPhone.getPhoneNumber())
+                        .phoneType(clientPhone.getPhoneType())
+                        .isDefault(clientPhone.getIsDefault()).state(clientPhone.getState()).build();
+                clientPhoneRS.add(rs);
+            }
+        }
+        return clientPhoneRS;
+    }
+
+    // funciones gestión de grupos
+    private List<GroupCompanyMember> transformMembersRQ(List<GroupCompanyMemberRQ> rq) {
+        List<GroupCompanyMember> members = new ArrayList<>();
+        for (GroupCompanyMemberRQ memberRQ : rq) {
+            GroupCompanyMember member = GroupCompanyMember.builder().clientId(memberRQ.getClientId())
+                    .groupRole(memberRQ.getGroupRole()).state(memberRQ.getState()).build();
+            members.add(member);
+        }
+        return members;
+    }
+    /*
+     * private GroupCompanyMember transformMemberRQ(GroupCompanyMemberRQ rq) {
+     * GroupCompanyMember member =
+     * GroupCompanyMember.builder().clientId(rq.getClientId())
+     * .groupRole(rq.getGroupRole()).state(rq.getState()).build();
+     * return member;
+     * }
+     */
 
 }
 // Gestión de Clientes Persona

@@ -15,15 +15,15 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-@Document(collection = "group companies")
+@Document(collection = "companies")
 public class GroupCompany {
     @Id
     private String id;
     private Integer branchId;
     private Integer locationId;
-    //@Indexed(unique = true)
+    @Indexed(unique = true)
     private String uniqueKey;
-    //@Indexed(unique = true)
+    @Indexed(unique = true)
     private String groupName;
     private String emailAddress;
     private String phoneNumber;

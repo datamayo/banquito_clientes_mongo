@@ -15,7 +15,10 @@ import ec.edu.espe.arquitectura.banquito.dto.ClientAddressRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRS;
+import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyMemberRQ;
 import ec.edu.espe.arquitectura.banquito.model.Client;
+import ec.edu.espe.arquitectura.banquito.model.GroupCompany;
+import ec.edu.espe.arquitectura.banquito.model.GroupCompanyMember;
 import ec.edu.espe.arquitectura.banquito.service.ClientService;
 
 @RestController
@@ -125,4 +128,17 @@ public class ClientController {
             return ResponseEntity.badRequest().build();
         }
     }
+/* 
+    @PutMapping("/addMember/{companyId}/{clientId}")
+    public ResponseEntity<GroupCompany> addMembers(@RequestBody List<GroupCompanyMemberRQ> membersRQ,
+            @PathVariable(name = "companyId") String companyId,
+            @PathVariable(name = "clientId") String clientId) {
+        try {
+            GroupCompany companyRS = this.clientService.addClientToCompany(companyId, clientId, membersRQ);
+            return ResponseEntity.ok(companyRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    */
 }
