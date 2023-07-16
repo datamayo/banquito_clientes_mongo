@@ -21,9 +21,8 @@ import ec.edu.espe.arquitectura.banquito.service.GroupCompanyService;
 @RequestMapping("/api/v2/companies")
 public class CompanyController {
     private final GroupCompanyService groupCompanyService;
-    
-    
-     public CompanyController(GroupCompanyService groupCompanyService) {
+
+    public CompanyController(GroupCompanyService groupCompanyService) {
         this.groupCompanyService = groupCompanyService;
     }
 
@@ -56,6 +55,41 @@ public class CompanyController {
         try {
             GroupCompany companyRS = this.groupCompanyService.addMember(groupName, membersRQ);
             return ResponseEntity.ok(companyRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/updateCompany/{uniqueKey}")
+    public ResponseEntity<GroupCompany> companyUpdate(@RequestBody GroupCompanyRQ company,
+            @PathVariable(name = "uniqueKey") String uniqueKey) {
+        try {
+            GroupCompany companyRS = this.groupCompanyService.updateCompany(company, uniqueKey);
+            return ResponseEntity.ok(companyRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+
+        }
+    }
+
+    @PutMapping("/deleteCompany/{uniqueKey}")
+    public ResponseEntity<GroupCompany> companyDelete(@PathVariable(name = "uniqueKey") String uniqueKey) {
+        try {
+            GroupCompany companyRS = this.groupCompanyService.deleteCompany(uniqueKey);
+            return ResponseEntity.ok(companyRS);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.badRequest().build();
+
+        }
+    }
+
+    @PutMapping("/updateMember/{companyId}/{clientId}")
+    public ResponseEntity<String> updateMember(@RequestBody GroupCompanyMemberRQ companyRQ,
+            @PathVariable(name = "companyId") String companyId,
+            @PathVariable(name = "clientId") String clientId) {
+        try {
+            this.groupCompanyService.updateMember(companyId, clientId, companyRQ);
+            return ResponseEntity.ok("Miembro actualizado");
         } catch (RuntimeException rte) {
             return ResponseEntity.badRequest().build();
         }

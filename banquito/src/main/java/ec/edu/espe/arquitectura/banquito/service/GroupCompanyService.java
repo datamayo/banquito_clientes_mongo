@@ -35,7 +35,7 @@ public class GroupCompanyService {
         return set.size() < list.size();
     }
 
-    //Método para buscar una compañia
+    // Método para buscar una compañia
     public GroupCompanyRS obtainCompanyByGroupName(String groupName) {
         GroupCompany company = this.groupCompanyRepository.findFirstByGroupName(groupName);
         GroupCompanyRS companyTmp = this.transformCompanyRS(company);
@@ -107,7 +107,7 @@ public class GroupCompanyService {
         }
     }
 
-    //Método para crear cliente juridico
+    // Método para crear cliente juridico
     @Transactional
     public GroupCompany companyCreate(GroupCompanyRQ companyRQ) {
         GroupCompany company = this.transformCompanyRQ(companyRQ);
@@ -124,6 +124,80 @@ public class GroupCompanyService {
             throw new RuntimeException("Compañia con ID " + company.getId() + " ya existe");
         }
 
+    }
+
+    // Método update cliente juridico
+    @Transactional
+    public GroupCompany updateCompany(GroupCompanyRQ companyRQ, String uniqueKey) {
+        GroupCompany company = this.transformCompanyRQ(companyRQ);
+        GroupCompany companyTmp = this.groupCompanyRepository.findFirstByUniqueKey(uniqueKey);
+        if (companyTmp == null) {
+            throw new RuntimeException("La compañia no existe");
+        } else {
+            companyTmp.setBranchId(company.getBranchId());
+            companyTmp.setLocationId(company.getLocationId());
+            companyTmp.setGroupName(company.getGroupName());
+            companyTmp.setEmailAddress(company.getEmailAddress());
+            companyTmp.setPhoneNumber(company.getPhoneNumber());
+            companyTmp.setLine1(company.getLine1());
+            companyTmp.setLine2(company.getLine2());
+            companyTmp.setLatitude(company.getLatitude());
+            companyTmp.setLongitude(company.getLongitude());
+            companyTmp.setComments(company.getComments());
+            companyTmp.setState(company.getState());
+            companyTmp.setLastModifiedDate(new Date());
+            if ("ACT".equals(company.getState())) {
+                companyTmp.setActivationDate(new Date());
+                companyTmp.setClosedDate(null);
+            }
+
+            return this.groupCompanyRepository.save(companyTmp);
+        }
+    }
+
+    // Método delete cliente Juridico
+    @Transactional
+    public GroupCompany deleteCompany(String uniqueKey) {
+        GroupCompany companyTmp = this.groupCompanyRepository.findFirstByUniqueKey(uniqueKey);
+        if (companyTmp == null) {
+            throw new RuntimeException("La compañia no existe");
+        } else {
+            companyTmp.setState("INA");
+            companyTmp.setClosedDate(new Date());
+            companyTmp.setLastModifiedDate(new Date());
+            companyTmp.setActivationDate(null);
+            return this.groupCompanyRepository.save(companyTmp);
+        }
+    }
+
+    @Transactional
+    public void updateMember(String companyId, String clientId, GroupCompanyMemberRQ companyRQ) {
+        GroupCompany companyTmp = this.groupCompanyRepository.findFirstByUniqueKey(companyId);
+        if (companyTmp == null) {
+            throw new RuntimeException("La compañia no existe");
+        } else {
+            GroupCompanyMember memberUpdate = this.transformUpdateMemberRQ(companyRQ);
+            List<GroupCompanyMember> members = companyTmp.getMembers();
+            if (members == null) {
+                throw new RuntimeException("No existen miembros en la empresa para modificar");
+            } else {
+                Boolean memberExists = false;
+                for (GroupCompanyMember member : members) {
+                    if (clientId.equals(member.getClientId())){ 
+                        member.setState(memberUpdate.getState());
+                        member.setGroupRole(memberUpdate.getGroupRole());
+                        member.setLastModifiedDate(new Date());
+                        memberExists= true;
+                        break;
+                    }
+
+                }
+                if (!memberExists) {
+                    throw new RuntimeException("No existe el miembro con id " + clientId);
+                }
+            }
+            this.groupCompanyRepository.save(companyTmp);
+        }
     }
 
     // funciones gestión de grupos
@@ -170,12 +244,19 @@ public class GroupCompanyService {
     }
 
     private GroupCompany transformCompanyRQ(GroupCompanyRQ rq) {
-        GroupCompany company = GroupCompany.builder().branchId(rq.getBranchId()).locationId(rq.getLocationId()).groupName(rq.getGroupName())
+        GroupCompany company = GroupCompany.builder().branchId(rq.getBranchId()).locationId(rq.getLocationId())
+                .groupName(rq.getGroupName())
                 .emailAddress(rq.getEmailAddress())
                 .phoneNumber(rq.getPhoneNumber()).line1(rq.getLine1()).line2(rq.getLine2())
                 .latitude(rq.getLatitude())
                 .longitude(rq.getLongitude()).state(rq.getState()).comments(rq.getComments()).build();
         return company;
+    }
+
+    private GroupCompanyMember transformUpdateMemberRQ(GroupCompanyMemberRQ rq) {
+        GroupCompanyMember member = GroupCompanyMember.builder().state(rq.getState()).groupRole(rq.getGroupRole())
+                .build();
+        return member;
     }
 
 }
