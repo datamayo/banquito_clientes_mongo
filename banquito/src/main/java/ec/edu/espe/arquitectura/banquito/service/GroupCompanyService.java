@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyMemberRQ;
 import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyMemberRS;
 import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyRS;
-import ec.edu.espe.arquitectura.banquito.model.ClientAddress;
 import ec.edu.espe.arquitectura.banquito.model.GroupCompany;
 import ec.edu.espe.arquitectura.banquito.model.GroupCompanyMember;
 import ec.edu.espe.arquitectura.banquito.repository.GroupCompanyRepository;
