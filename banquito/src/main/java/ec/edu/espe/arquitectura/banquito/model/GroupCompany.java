@@ -8,10 +8,12 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Document(collection = "companies")
+@Builder
 public class GroupCompany {
     @Id
     private String id;

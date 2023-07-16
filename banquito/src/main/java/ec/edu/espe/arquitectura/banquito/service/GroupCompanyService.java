@@ -5,12 +5,14 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyMemberRQ;
 import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyMemberRS;
+import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyRQ;
 import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyRS;
 import ec.edu.espe.arquitectura.banquito.model.Client;
 import ec.edu.espe.arquitectura.banquito.model.GroupCompany;
@@ -33,6 +35,7 @@ public class GroupCompanyService {
         return set.size() < list.size();
     }
 
+    //Método para buscar una compañia
     public GroupCompanyRS obtainCompanyByGroupName(String groupName) {
         GroupCompany company = this.groupCompanyRepository.findFirstByGroupName(groupName);
         GroupCompanyRS companyTmp = this.transformCompanyRS(company);
@@ -104,6 +107,25 @@ public class GroupCompanyService {
         }
     }
 
+    //Método para crear cliente juridico
+    @Transactional
+    public GroupCompany companyCreate(GroupCompanyRQ companyRQ) {
+        GroupCompany company = this.transformCompanyRQ(companyRQ);
+        GroupCompany companyTmp = this.groupCompanyRepository.findFirstByGroupName(company.getGroupName());
+        if (companyTmp == null) {
+            company.setUniqueKey(UUID.randomUUID().toString());
+            company.setCreationDate(new Date());
+            company.setLastModifiedDate(new Date());
+            company.setActivationDate(new Date());
+            company.setState("ACT");
+
+            return this.groupCompanyRepository.save(company);
+        } else {
+            throw new RuntimeException("Compañia con ID " + company.getId() + " ya existe");
+        }
+
+    }
+
     // funciones gestión de grupos
     private List<GroupCompanyMember> transformMembersRQ(List<GroupCompanyMemberRQ> rq) {
         List<GroupCompanyMember> members = new ArrayList<>();
@@ -145,6 +167,15 @@ public class GroupCompanyService {
             }
         }
         return membersRS;
+    }
+
+    private GroupCompany transformCompanyRQ(GroupCompanyRQ rq) {
+        GroupCompany company = GroupCompany.builder().branchId(rq.getBranchId()).locationId(rq.getLocationId()).groupName(rq.getGroupName())
+                .emailAddress(rq.getEmailAddress())
+                .phoneNumber(rq.getPhoneNumber()).line1(rq.getLine1()).line2(rq.getLine2())
+                .latitude(rq.getLatitude())
+                .longitude(rq.getLongitude()).state(rq.getState()).comments(rq.getComments()).build();
+        return company;
     }
 
 }
