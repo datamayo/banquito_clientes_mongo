@@ -9,8 +9,8 @@ import lombok.Data;
 @Data
 @Builder
 public class GroupCompanyRS {
-    private Integer branchId;
-    private Integer locationId;
+    private String branchId;
+    private String locationId;
     private String uniqueKey;
     private String groupName;
     private String emailAddress;

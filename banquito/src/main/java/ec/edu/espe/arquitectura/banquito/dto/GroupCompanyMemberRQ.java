@@ -1,7 +1,5 @@
 package ec.edu.espe.arquitectura.banquito.dto;
 
-import java.util.Date;
-
 import lombok.Builder;
 import lombok.Data;
 

@@ -16,23 +16,17 @@ import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRS;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientRS;
-import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyMemberRQ;
 import ec.edu.espe.arquitectura.banquito.model.Client;
 import ec.edu.espe.arquitectura.banquito.model.ClientAddress;
 import ec.edu.espe.arquitectura.banquito.model.ClientPhone;
-import ec.edu.espe.arquitectura.banquito.model.GroupCompany;
-import ec.edu.espe.arquitectura.banquito.model.GroupCompanyMember;
 import ec.edu.espe.arquitectura.banquito.repository.ClientRepository;
-import ec.edu.espe.arquitectura.banquito.repository.GroupCompanyRepository;
 
 @Service
 public class ClientService {
     private final ClientRepository clientRepository;
-    private final GroupCompanyRepository groupCompanyRepository;
 
-    public ClientService(ClientRepository clientRepository, GroupCompanyRepository groupCompanyRepository) {
+    public ClientService(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
-        this.groupCompanyRepository = groupCompanyRepository;
     }
 
     public Boolean hasDuplicates(List<?> list) {
@@ -277,8 +271,6 @@ public class ClientService {
         }
     }
 
-    // Método para agregar un cliente como miembro de una compañia
-
     // funciones para la gestión de clientes
     private Client transformClientRQ(ClientRQ rq) {
         Client client = Client.builder().branchId(rq.getBranchId()).typeDocumentId(rq.getTypeDocumentId())
@@ -373,17 +365,6 @@ public class ClientService {
         }
         return clientPhoneRS;
     }
-
-    // funciones gestión de grupos
-    private List<GroupCompanyMember> transformMembersRQ(List<GroupCompanyMemberRQ> rq) {
-        List<GroupCompanyMember> members = new ArrayList<>();
-        for (GroupCompanyMemberRQ memberRQ : rq) {
-            GroupCompanyMember member = GroupCompanyMember.builder().clientId(memberRQ.getClientId())
-                    .groupRole(memberRQ.getGroupRole()).state(memberRQ.getState()).build();
-            members.add(member);
-        }
-        return members;
-    }
     /*
      * private GroupCompanyMember transformMemberRQ(GroupCompanyMemberRQ rq) {
      * GroupCompanyMember member =
@@ -392,7 +373,6 @@ public class ClientService {
      * return member;
      * }
      */
-
 }
 // Gestión de Clientes Persona
 /*

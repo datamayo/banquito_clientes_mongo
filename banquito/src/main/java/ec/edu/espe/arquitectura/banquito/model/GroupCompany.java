@@ -8,19 +8,15 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
-@NoArgsConstructor
+@Data
 @Document(collection = "companies")
 public class GroupCompany {
     @Id
     private String id;
-    private Integer branchId;
-    private Integer locationId;
+    private String branchId;
+    private String locationId;
     @Indexed(unique = true)
     private String uniqueKey;
     @Indexed(unique = true)
