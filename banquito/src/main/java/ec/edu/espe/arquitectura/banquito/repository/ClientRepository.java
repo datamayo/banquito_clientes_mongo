@@ -11,4 +11,6 @@ public interface ClientRepository extends MongoRepository<Client, String> {
 
     List<Client> findByLastNameLike(String lastName);
 
+    Client findFirstByUniqueKey(String uniqueKey);
+
 }
