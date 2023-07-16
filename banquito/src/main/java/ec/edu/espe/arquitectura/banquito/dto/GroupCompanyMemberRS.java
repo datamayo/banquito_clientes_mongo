@@ -1,4 +1,4 @@
-package ec.edu.espe.arquitectura.banquito.model;
+package ec.edu.espe.arquitectura.banquito.dto;
 
 import java.util.Date;
 
@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class GroupCompanyMember {
+public class GroupCompanyMemberRS {
     private String groupRole;
     private String clientId;
     private String state;
