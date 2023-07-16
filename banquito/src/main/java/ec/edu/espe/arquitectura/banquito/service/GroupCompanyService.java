@@ -12,16 +12,20 @@ import org.springframework.transaction.annotation.Transactional;
 import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyMemberRQ;
 import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyMemberRS;
 import ec.edu.espe.arquitectura.banquito.dto.GroupCompanyRS;
+import ec.edu.espe.arquitectura.banquito.model.Client;
 import ec.edu.espe.arquitectura.banquito.model.GroupCompany;
 import ec.edu.espe.arquitectura.banquito.model.GroupCompanyMember;
+import ec.edu.espe.arquitectura.banquito.repository.ClientRepository;
 import ec.edu.espe.arquitectura.banquito.repository.GroupCompanyRepository;
 
 @Service
 public class GroupCompanyService {
     private final GroupCompanyRepository groupCompanyRepository;
+    private final ClientRepository clientRepository;
 
-    public GroupCompanyService(GroupCompanyRepository groupCompanyRepository) {
+    public GroupCompanyService(GroupCompanyRepository groupCompanyRepository, ClientRepository clientRepository) {
         this.groupCompanyRepository = groupCompanyRepository;
+        this.clientRepository = clientRepository;
     }
 
     public Boolean hasDuplicates(List<?> list) {
@@ -46,8 +50,6 @@ public class GroupCompanyService {
     @Transactional
     public GroupCompany addMember(String groupName, List<GroupCompanyMemberRQ> membersRQ) {
         GroupCompany companyTmp = this.groupCompanyRepository.findFirstByGroupName(groupName);
-        // Client clientTmp =
-        // this.groupCompanyRepository.findFirstByUniqueKey(companyTmp.getMembers())
         if (companyTmp == null) {
             throw new RuntimeException("No existe la compañia");
         } else {
@@ -56,10 +58,15 @@ public class GroupCompanyService {
             List<String> allClientIds = new ArrayList<>();
             if (members == null) {
                 for (GroupCompanyMember member : newMembers) {
-                    member.setCreationDate(new Date());
-                    member.setLastModifiedDate(new Date());
-                    member.setState("ACT");
-                    allClientIds.add(member.getClientId());
+                    Client client = this.clientRepository.findFirstByUniqueKey(member.getClientId());
+                    if (client == null) {
+                        throw new RuntimeException("El o los clientes no existen");
+                    } else {
+                        member.setCreationDate(new Date());
+                        member.setLastModifiedDate(new Date());
+                        member.setState("ACT");
+                        allClientIds.add(member.getClientId());
+                    }
                 }
                 if (this.hasDuplicates(allClientIds)) {
                     throw new RuntimeException(
@@ -67,22 +74,28 @@ public class GroupCompanyService {
                 } else {
                     companyTmp.setMembers(newMembers);
                 }
-                
-            }else {
+
+            } else {
                 List<GroupCompanyMember> allMembers = new ArrayList<>();
                 for (GroupCompanyMember member : newMembers) {
-                    member.setCreationDate(new Date());
-                    member.setLastModifiedDate(new Date());
-                    member.setState("ACT");
-                    allMembers.add(member);
-                    allClientIds.add(member.getClientId());
+                    Client client = this.clientRepository.findFirstByUniqueKey(member.getClientId());
+                    if (client == null) {
+                        throw new RuntimeException("El o los clientes no existen");
+                    } else {
+                        member.setCreationDate(new Date());
+                        member.setLastModifiedDate(new Date());
+                        member.setState("ACT");
+                        allMembers.add(member);
+                        allClientIds.add(member.getClientId());
+                    }
                 }
                 for (GroupCompanyMember member : members) {
                     allMembers.add(member);
                     allClientIds.add(member.getClientId());
                 }
                 if (this.hasDuplicates(allClientIds)) {
-                    throw new RuntimeException("Existen clientes que ya perteneces a la organizaci\u00F3n, volver a intentar");
+                    throw new RuntimeException(
+                            "Existen clientes que ya perteneces a la organización, volver a intentar");
                 } else {
                     companyTmp.setMembers(allMembers);
                 }
