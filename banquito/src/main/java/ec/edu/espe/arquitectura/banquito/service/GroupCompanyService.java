@@ -49,6 +49,15 @@ public class GroupCompanyService {
         }
     }
 
+    public List<GroupCompanyRS> obtainAllCompanies() {
+        List<GroupCompany> companies = this.groupCompanyRepository.findAll();
+        List<GroupCompanyRS> companiesRS = new ArrayList<>();
+        for (GroupCompany company : companies) {
+            companiesRS.add(this.transformCompanyRS(company));
+        }
+        return companiesRS;
+    }
+
     // Método para agregar un cliente como miembro de una compañia
     @Transactional
     public GroupCompany addMember(String groupName, List<GroupCompanyMemberRQ> membersRQ) {
@@ -183,11 +192,11 @@ public class GroupCompanyService {
             } else {
                 Boolean memberExists = false;
                 for (GroupCompanyMember member : members) {
-                    if (clientId.equals(member.getClientId())){ 
+                    if (clientId.equals(member.getClientId())) {
                         member.setState(memberUpdate.getState());
                         member.setGroupRole(memberUpdate.getGroupRole());
                         member.setLastModifiedDate(new Date());
-                        memberExists= true;
+                        memberExists = true;
                         break;
                     }
 
