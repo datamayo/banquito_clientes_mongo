@@ -48,6 +48,15 @@ public class ClientService {
         }
     }
 
+    public List<ClientRS> obtainAllClients(){
+        List<Client> clients = this.clientRepository.findAll();
+        List<ClientRS> clientsRS = new ArrayList<>();
+        for (Client client : clients) {
+            clientsRS.add(this.transformClientRS(client));
+        }
+        return clientsRS;
+    }
+
     // Método create para clientes
     @Transactional
     public Client clientCreate(ClientRQ clientRQ) {

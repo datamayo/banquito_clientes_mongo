@@ -40,6 +40,16 @@ public class ClientController {
 
     }
 
+    @GetMapping("/listClients")
+    public ResponseEntity<List<ClientRS>> obtainAllclients() {
+        try {
+            List<ClientRS> clients = this.clientService.obtainAllClients();
+            return ResponseEntity.ok(clients);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping
     public ResponseEntity<Client> clientCreate(@RequestBody ClientRQ client) {
         try {
