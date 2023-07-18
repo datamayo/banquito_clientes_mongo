@@ -42,7 +42,7 @@ public class GroupCompanyService {
         if (companyTmp == null) {
             throw new RuntimeException("Parametros de búsqueda incorrectos");
         } else {
-            if ("INA".equals(companyTmp.getState())) {
+            if ("INACTIVE".equals(companyTmp.getState())) {
                 throw new RuntimeException("La organización ya no se encuentra disponible");
             }
             return companyTmp;
@@ -76,7 +76,7 @@ public class GroupCompanyService {
                     } else {
                         member.setCreationDate(new Date());
                         member.setLastModifiedDate(new Date());
-                        member.setState("ACT");
+                        member.setState("ACTIVE");
                         allClientIds.add(member.getClientId());
                     }
                 }
@@ -96,7 +96,7 @@ public class GroupCompanyService {
                     } else {
                         member.setCreationDate(new Date());
                         member.setLastModifiedDate(new Date());
-                        member.setState("ACT");
+                        member.setState("ACTIVE");
                         allMembers.add(member);
                         allClientIds.add(member.getClientId());
                     }
@@ -126,7 +126,7 @@ public class GroupCompanyService {
             company.setCreationDate(new Date());
             company.setLastModifiedDate(new Date());
             company.setActivationDate(new Date());
-            company.setState("ACT");
+            company.setState("ACTIVE");
 
             return this.groupCompanyRepository.save(company);
         } else {
@@ -155,7 +155,7 @@ public class GroupCompanyService {
             companyTmp.setComments(company.getComments());
             companyTmp.setState(company.getState());
             companyTmp.setLastModifiedDate(new Date());
-            if ("ACT".equals(company.getState())) {
+            if ("ACTIVE".equals(company.getState())) {
                 companyTmp.setActivationDate(new Date());
                 companyTmp.setClosedDate(null);
             }
@@ -171,7 +171,7 @@ public class GroupCompanyService {
         if (companyTmp == null) {
             throw new RuntimeException("La compañia no existe");
         } else {
-            companyTmp.setState("INA");
+            companyTmp.setState("INACTIVE");
             companyTmp.setClosedDate(new Date());
             companyTmp.setLastModifiedDate(new Date());
             companyTmp.setActivationDate(null);

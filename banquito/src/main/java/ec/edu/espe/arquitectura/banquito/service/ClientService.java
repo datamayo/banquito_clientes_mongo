@@ -41,7 +41,7 @@ public class ClientService {
         if (clientTmp == null) {
             throw new RuntimeException("Parametros de búsqueda incorrectos");
         } else {
-            if ("INA".equals(clientTmp.getState())) {
+            if ("INACTIVE".equals(clientTmp.getState())) {
                 throw new RuntimeException("El cliente ya no se encuentra disponible");
             }
             return clientTmp;
@@ -71,7 +71,7 @@ public class ClientService {
             client.setCreationDate(new Date());
             client.setLastModifiedDate(new Date());
             client.setActivationDate(new Date());
-            client.setState("ACT");
+            client.setState("ACTIVE");
 
             return this.clientRepository.save(client);
         } else {
@@ -98,7 +98,7 @@ public class ClientService {
             clientTmp.setComments(client.getComments());
             clientTmp.setLastModifiedDate(new Date());
             clientTmp.setState(client.getState());
-            if ("ACT".equals(client.getState())) {
+            if ("ACTIVE".equals(client.getState())) {
                 clientTmp.setActivationDate(new Date());
                 clientTmp.setClosedDate(null);
             }
@@ -115,7 +115,7 @@ public class ClientService {
         if (clientTmp == null) {
             throw new RuntimeException("El cliente no existe");
         } else {
-            clientTmp.setState("INA");
+            clientTmp.setState("INACTIVE");
             clientTmp.setClosedDate(new Date());
             clientTmp.setLastModifiedDate(new Date());
             clientTmp.setActivationDate(null);
@@ -136,7 +136,7 @@ public class ClientService {
             List<String> allNumbers = new ArrayList<>();
             if (phoneNumbers == null) {
                 for (ClientPhone clientPhone : newPhones) {
-                    clientPhone.setState("ACT");
+                    clientPhone.setState("ACTIVE");
                     allNumbers.add(clientPhone.getPhoneNumber());
 
                 }
@@ -150,7 +150,7 @@ public class ClientService {
             } else {
                 List<ClientPhone> phones = new ArrayList<>();
                 for (ClientPhone clientPhone : newPhones) {
-                    clientPhone.setState("ACT");
+                    clientPhone.setState("ACTIVE");
                     phones.add(clientPhone);
                     allNumbers.add(clientPhone.getPhoneNumber());
                 }
@@ -213,7 +213,7 @@ public class ClientService {
             List<String> allLine2 = new ArrayList<>();
             if (addresses == null) {
                 for (ClientAddress clientAddress : newAddresses) {
-                    clientAddress.setState("ACT");
+                    clientAddress.setState("ACTIVE");
                     allLine1.add(clientAddress.getLine1());
                     allLine2.add(clientAddress.getLine2());
                 }
@@ -227,7 +227,7 @@ public class ClientService {
             } else {
                 List<ClientAddress> allAddresses = new ArrayList<>();
                 for (ClientAddress clientAddress : newAddresses) {
-                    clientAddress.setState("ACT");
+                    clientAddress.setState("ACTIVE");
                     allAddresses.add(clientAddress);
                     allLine1.add(clientAddress.getLine1());
                     allLine2.add(clientAddress.getLine2());
