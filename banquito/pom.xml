@@ -59,6 +59,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>banquito</finalName>
 	</build>
 
 </project>
