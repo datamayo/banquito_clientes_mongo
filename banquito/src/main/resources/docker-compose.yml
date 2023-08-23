@@ -1,0 +1,15 @@
+version: '3'
+services:
+  mongo:
+    image: mongo:latest
+    container_name: "mongo"
+    ports:
+      - 27017:27017
+  springdockercompose:
+    image: springdockercompose:0.1
+    container_name: "springdockercompose"
+    ports:
+      - 9003:9003
+    depends_on:
+      - mongo
+
