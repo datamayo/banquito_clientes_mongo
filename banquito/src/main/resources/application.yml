@@ -1,4 +1,6 @@
 spring:
     data:
         mongodb:
-            uri: mongodb://mongo:27017/client
+            database: client
+            host: mongo
+            port: 27017

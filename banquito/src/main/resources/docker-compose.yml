@@ -10,6 +10,7 @@ services:
     container_name: "springdockercompose"
     ports:
       - 9003:9003
-    depends_on:
+    links:
       - mongo
+
 

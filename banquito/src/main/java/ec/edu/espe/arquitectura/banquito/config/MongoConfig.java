@@ -18,25 +18,11 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
-    
-    
-    @Value("${spring.data.mongodb.uri}")
-    private String uri;
+    @Value("${spring.data.mongodb.database}")
     private String databaseName;
-    public String obtenerNombreBaseDeDatosDesdeURL(String urlConexion) {
-        int indexUltimaBarra = urlConexion.lastIndexOf("/");
-        if (indexUltimaBarra >= 0 && indexUltimaBarra < urlConexion.length() - 1) {
-            return urlConexion.substring(indexUltimaBarra + 1);
-        } else {
-            // Manejar caso de URL inválida o sin nombre de base de datos
-            return null;
-        }
-    }
-    
 
     @Override
     protected String getDatabaseName() {
-        this.databaseName=obtenerNombreBaseDeDatosDesdeURL(uri);
         return this.databaseName;
     }
 
