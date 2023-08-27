@@ -36,6 +36,7 @@ public class Client {
     private String state;
     private Date closedDate;
     private String comments;
+    private String password;
     @Version
     private Long version;
 

@@ -25,6 +25,7 @@ public class ClientRS {
     private String state;
     private Date closedDate;
     private String comments;
+    private String password;
     private List<ClientPhoneRS> phoneNumbers;
     private List<ClientAddressRS> addresses;
     //private List<GroupCompanyMember> groupCompanyMember;

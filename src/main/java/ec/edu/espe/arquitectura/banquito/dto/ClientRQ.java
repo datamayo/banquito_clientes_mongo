@@ -19,4 +19,5 @@ public class ClientRQ {
     private String role;
     private String comments;
     private String state;
+    private String password;
 }

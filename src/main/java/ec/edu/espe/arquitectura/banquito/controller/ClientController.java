@@ -3,13 +3,7 @@ package ec.edu.espe.arquitectura.banquito.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import ec.edu.espe.arquitectura.banquito.dto.ClientAddressRQ;
 import ec.edu.espe.arquitectura.banquito.dto.ClientPhoneRQ;
@@ -20,6 +14,7 @@ import ec.edu.espe.arquitectura.banquito.service.ClientService;
 
 @RestController
 @RequestMapping("/api/v2/clients")
+@CrossOrigin
 public class ClientController {
     private final ClientService clientService;
 
@@ -37,14 +32,25 @@ public class ClientController {
         } catch (RuntimeException rte) {
             return ResponseEntity.notFound().build();
         }
-
     }
 
-    @GetMapping("/listClients")
-    public ResponseEntity<List<ClientRS>> obtainAllclients() {
+    @GetMapping("/{uniqueKey}")
+    public ResponseEntity<ClientRS> obtainById(
+            @PathVariable(name = "uniqueKey") String uniqueKey) {
         try {
-            List<ClientRS> clients = this.clientService.obtainAllClients();
-            return ResponseEntity.ok(clients);
+            ClientRS client = this.clientService.obtainClientById(uniqueKey);
+            return ResponseEntity.ok(client);
+        } catch (RuntimeException rte) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/login/{uniqueKey}")
+    public ResponseEntity<ClientRS> obtainLogin(
+            @PathVariable(name = "uniqueKey") String uniqueKey) {
+        try {
+            ClientRS client = this.clientService.obtainLogin(uniqueKey);
+            return ResponseEntity.ok(client);
         } catch (RuntimeException rte) {
             return ResponseEntity.notFound().build();
         }

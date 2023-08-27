@@ -48,16 +48,29 @@ public class ClientService {
         }
     }
 
-    public List<ClientRS> obtainAllClients(){
-        List<Client> clients = this.clientRepository.findAll();
-        List<ClientRS> clientsRS = new ArrayList<>();
-        for (Client client : clients) {
-            clientsRS.add(this.transformClientRS(client));
+    public ClientRS obtainClientById(String id) {
+        Client client = this.clientRepository.findFirstByUniqueKey(id);
+        ClientRS clientTmp = this.transformClientRS(client);
+        if (clientTmp == null) {
+            throw new RuntimeException("Parametros de búsqueda incorrectos");
+        } else {
+            if ("INA".equals(clientTmp.getState())) {
+                throw new RuntimeException("El cliente ya no se encuentra disponible");
+            }
+            return clientTmp;
         }
-        return clientsRS;
     }
 
-    // Método create para clientes
+    public ClientRS obtainLogin(String id){
+        Client client = this.clientRepository.findFirstByUniqueKey(id);
+        ClientRS clientTmp = this.transformLoginClientRS(client);
+        if (clientTmp == null) {
+            throw new RuntimeException("Parametros de búsqueda incorrectos");
+        } else {
+            return clientTmp;
+        }
+    }
+
     @Transactional
     public Client clientCreate(ClientRQ clientRQ) {
         Client client = this.transformClientRQ(clientRQ);
@@ -68,6 +81,7 @@ public class ClientService {
                 throw new RuntimeException("La fecha de nacimiento es incorrecta");
             }
             client.setUniqueKey(UUID.randomUUID().toString());
+            client.setPassword("123");
             client.setCreationDate(new Date());
             client.setLastModifiedDate(new Date());
             client.setActivationDate(new Date());
@@ -80,7 +94,6 @@ public class ClientService {
 
     }
 
-    // Método update clientes
     @Transactional
     public Client updateClient(ClientRQ clientRQ, String typeDocument, String documentId) {
         Client client = this.transformClientRQ(clientRQ);
@@ -107,7 +120,6 @@ public class ClientService {
         }
     }
 
-    // Método delete para clientes
     @Transactional
     public Client deleteClient(String typeDocument, String documentId) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
@@ -123,7 +135,6 @@ public class ClientService {
         }
     }
 
-    // Método para agreagr números telefónicos a un cliente
     @Transactional
     public Client addPhones(String typeDocument, String documentId, List<ClientPhoneRQ> phonesRQ) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
@@ -168,7 +179,6 @@ public class ClientService {
         }
     }
 
-    // Método para modificar/borrar un teléfono de un cliente
     @Transactional
     public void updatePhone(String typeDocument, String documentId, String phoneNumber, ClientPhoneRQ phoneRQ) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
@@ -199,7 +209,6 @@ public class ClientService {
         }
     }
 
-    // Método para agregar direcciones
     @Transactional
     public Client addAddresses(String typeDocument, String documentId, List<ClientAddressRQ> addressesRQ) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
@@ -218,7 +227,7 @@ public class ClientService {
                     allLine2.add(clientAddress.getLine2());
                 }
 
-                if (this.hasDuplicates(allLine1) == true && this.hasDuplicates(allLine2) == true) {
+                if (this.hasDuplicates(allLine1) && this.hasDuplicates(allLine2)) {
                     throw new RuntimeException("Existen direcciones repetidas, volver a intentar");
                 } else {
                     clientTmp.setAddresses(newAddresses);
@@ -237,7 +246,7 @@ public class ClientService {
                     allLine1.add(clientAddress.getLine1());
                     allLine2.add(clientAddress.getLine2());
                 }
-                if (this.hasDuplicates(allLine1) == true && this.hasDuplicates(allLine2)) {
+                if (this.hasDuplicates(allLine1) && this.hasDuplicates(allLine2)) {
                     throw new RuntimeException("Existen direcciones repetidas, volver a intentar");
                 } else {
                     clientTmp.setAddresses(allAddresses);
@@ -247,10 +256,9 @@ public class ClientService {
         }
     }
 
-    // Método para modificar/borrar una dirección de un cliente
     @Transactional
     public void updateAddress(String typeDocument, String documentId, String line1, String line2,
-            ClientAddressRQ addressRQ) {
+                              ClientAddressRQ addressRQ) {
         Client clientTmp = this.clientRepository.findFirstByTypeDocumentIdAndDocumentId(typeDocument,
                 documentId);
         if (clientTmp == null) {
@@ -280,12 +288,11 @@ public class ClientService {
         }
     }
 
-    // funciones para la gestión de clientes
     private Client transformClientRQ(ClientRQ rq) {
         Client client = Client.builder().branchId(rq.getBranchId()).typeDocumentId(rq.getTypeDocumentId())
                 .documentId(rq.getDocumentId()).firstName(rq.getFirstName()).lastName(rq.getLastName())
                 .gender(rq.getGender()).birthDate(rq.getBirthDate()).emailAddress(rq.getEmailAddress())
-                .role(rq.getRole()).comments(rq.getComments()).state(rq.getState()).build();
+                .role(rq.getRole()).comments(rq.getComments()).state(rq.getState()).password(rq.getPassword()).build();
         return client;
 
     }
@@ -317,7 +324,6 @@ public class ClientService {
 
     }
 
-    // funciones para la gestión de direcciones
     private List<ClientAddress> transformClientAddressesRQ(List<ClientAddressRQ> rq) {
         List<ClientAddress> clientAddresses = new ArrayList<>();
         for (ClientAddressRQ clientAddressRQ : rq) {
@@ -354,7 +360,6 @@ public class ClientService {
         return clientAddressRS;
     }
 
-    // funciones para la gestió de teléfonos
     private ClientPhone transformUpdatePhoneRQ(ClientPhoneRQ rq) {
         ClientPhone clientPhone = ClientPhone.builder().state(rq.getState()).isDefault(rq.getIsDefault()).build();
         return clientPhone;
@@ -374,4 +379,11 @@ public class ClientService {
         }
         return clientPhoneRS;
     }
+
+    private ClientRS transformLoginClientRS(Client client){
+        ClientRS login = ClientRS.builder().emailAddress(client.getEmailAddress())
+                .password(client.getPassword()).build();
+        return login;
+    }
+
 }

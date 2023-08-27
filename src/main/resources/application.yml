@@ -1,6 +1,0 @@
-spring:
-    data:
-        mongodb:
-            database: client
-            host: mongo
-            port: 27017
