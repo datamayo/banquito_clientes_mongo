@@ -9,5 +9,15 @@ steps:
     args: ["build", "-t", "us-central1-docker.pkg.dev/test-397216/clients-mongo/banquito:latest", "."]
   - name: gcr.io/cloud-builders/docker
     args: [ "push", "us-central1-docker.pkg.dev/test-397216/clients-mongo/banquito:latest"]
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_SERVICE_NAME'
+      - '--image'
+      - 'gcr.io/test-397216/clients-mongo/banquito:latest'
+      - '--region'
+      - 'us-central1'
 images:
   - "us-central1-docker.pkg.dev/test-397216/clients-mongo/banquito:latest"
