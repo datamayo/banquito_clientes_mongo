@@ -17,6 +17,7 @@ steps:
       - '$_SERVICE_NAME'
       - '--image'
       - 'us-central1-docker.pkg.dev/test-397216/clients-mongo/banquito:latest'
+      - '-- port 8761'
       - '--region'
       - 'us-central1'
 images:
