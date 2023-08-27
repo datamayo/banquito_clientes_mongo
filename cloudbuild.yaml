@@ -1,0 +1,10 @@
+steps:
+  - name: maven:3-eclipse-temurin-17-alpine
+    entrypoint: mvn
+    args: ["test"]
+  - name: maven:3-eclipse-temurin-17-alpine
+    entrypoint: mvn
+    args: ["package", "-Dmaven.test.skip=true"]
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-t", "us-central1-docker.pkg.dev/test-397216/clients-mongo", "--build-arg=JAR_FILE=target/banquito-0.0.1-SNAPSHOT.jar", "."]
+images: ["us-central1-docker.pkg.dev/test-397216/clients-mongo"]
